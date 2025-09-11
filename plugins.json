@@ -1,0 +1,123 @@
+[
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/CASAnimeProvider.cs3",
+        "status": 1,
+        "version": 6,
+        "name": "CASAnimeProvider",
+        "internalName": "CASAnimeProvider",
+        "authors": [
+            "okibcn"
+        ],
+        "fileSize": 12657,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "iconUrl": "https://wsrv.nl/?url=https://latanime.org/public/img/logito.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-b2a4c5f2e30f9c2ad5d2368b2b7f88863d0bc1595a19c1bfdc04535a55c75400"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/EstrenosCinesaa.cs3",
+        "status": 1,
+        "version": 5,
+        "name": "EstrenosCinesaa",
+        "internalName": "EstrenosCinesaa",
+        "authors": [
+            "okibcn"
+        ],
+        "fileSize": 14310,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://wsrv.nl/?url=https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp",
+        "apiVersion": 1,
+        "fileHash": "sha256-9e2f6d210266df26409e62c91ccd01e13d3f1bd2c06e87317b2aefd5d6674e6e"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/GnulaHDProvider.cs3",
+        "status": 1,
+        "version": 2,
+        "name": "GnulaHDProvider",
+        "internalName": "GnulaHDProvider",
+        "authors": [
+            "Mioki"
+        ],
+        "fileSize": 17724,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "iconUrl": "https://ww3.gnulahd.nu/wp-content/uploads/2025/07/nuevlo-logo.jpg",
+        "apiVersion": 1,
+        "fileHash": "sha256-fae310a54b456b18216c41705a9ef63b068cb04601a2a5df9272a3baecefac0b"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/HDFullProvider.cs3",
+        "status": 1,
+        "version": 5,
+        "name": "HDFullProvider",
+        "internalName": "HDFullProvider",
+        "authors": [
+            "okibcn"
+        ],
+        "fileSize": 28592,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://hdfullcdn.cc/favicon.ico",
+        "apiVersion": 1,
+        "fileHash": "sha256-09d6cce6c1c29bc86bb56a29216d29302fa93825d8e0abd260ce7ad3e8805c0f"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/OsjonosuProvider.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "OsjonosuProvider",
+        "internalName": "OsjonosuProvider",
+        "authors": [
+            "Mioki"
+        ],
+        "fileSize": 14142,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://wsrv.nl/?url=https://osjonosu.xyz/wp-content/uploads/2025/12/Cool-Text-OSJONOSU-366822352288474.png",
+        "apiVersion": 1,
+        "fileHash": "sha256-56850c25ecbc14442580e9f456f6cfe213f36ac3192439a8ad2ec2ee9093bbd0"
+    },
+    {
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/RepelisHD.cs3",
+        "status": 1,
+        "version": 1,
+        "name": "RepelisHD",
+        "internalName": "RepelisHD",
+        "authors": [
+            "okibcn"
+        ],
+        "fileSize": 17197,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "language": "es",
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "iconUrl": "https://wsrv.nl/?url=https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp",
+        "apiVersion": 1,
+        "fileHash": "sha256-e1be3e43605f2758fe2889a64289846fd6c7d882c641f780be41a67f0cf2f35f"
+    }
+]
