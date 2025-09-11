@@ -1,0 +1,117 @@
+[
+    {
+        "iconUrl": "https://wsrv.nl/?url=https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 14389,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "okibcn"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 5,
+        "internalName": "EstrenosCinesaa",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/EstrenosCinesaa.cs3",
+        "name": "EstrenosCinesaa"
+    },
+    {
+        "iconUrl": "https://ww3.gnulahd.nu/wp-content/uploads/2025/07/nuevlo-logo.jpg",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 17886,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "Mioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries",
+            "Anime"
+        ],
+        "version": 2,
+        "internalName": "GnulaHDProvider",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/GnulaHDProvider.cs3",
+        "name": "GnulaHDProvider"
+    },
+    {
+        "iconUrl": "https://hdfullcdn.cc/favicon.ico",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 24750,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "okibcn"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 5,
+        "internalName": "HDFullProvider",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/HDFullProvider.cs3",
+        "name": "HDFullProvider"
+    },
+    {
+        "iconUrl": "https://wsrv.nl/?url=https://latanime.org/public/img/logito.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 12625,
+        "status": 1,
+        "language": "mx",
+        "authors": [
+            "misajimenezmx"
+        ],
+        "tvTypes": [
+            "Anime",
+            "OVA"
+        ],
+        "version": 5,
+        "internalName": "LATAnimeProvider",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/LATAnimeProvider.cs3",
+        "name": "LATAnimeProvider"
+    },
+    {
+        "iconUrl": "https://wsrv.nl/?url=https://osjonosu.xyz/wp-content/uploads/2025/12/Cool-Text-OSJONOSU-366822352288474.png",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 14295,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "Mioki"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 1,
+        "internalName": "OsjonosuProvider",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/OsjonosuProvider.cs3",
+        "name": "OsjonosuProvider"
+    },
+    {
+        "iconUrl": "https://wsrv.nl/?url=https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp",
+        "apiVersion": 1,
+        "repositoryUrl": "https://github.com/okibcn/Cloudstream-Plugins",
+        "fileSize": 17317,
+        "status": 1,
+        "language": "es",
+        "authors": [
+            "okibcn"
+        ],
+        "tvTypes": [
+            "Movie",
+            "TvSeries"
+        ],
+        "version": 1,
+        "internalName": "RepelisHD",
+        "url": "https://raw.githubusercontent.com/okibcn/Cloudstream-Plugins/builds/RepelisHD.cs3",
+        "name": "RepelisHD"
+    }
+]
