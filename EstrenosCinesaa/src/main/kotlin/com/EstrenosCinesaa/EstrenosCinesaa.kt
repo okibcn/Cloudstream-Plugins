@@ -30,7 +30,7 @@ class EstrenosCinesaa : MainAPI() {
         val document = app.get("$mainUrl/${request.data}/page/$page").documentLarge
         Log.d("EstrenosCinesaa", " ")
         Log.d("EstrenosCinesaa", "${request.name} | $mainUrl/${request.data}/page/$page")
-        val home     = document.select("#archive-content article, div.items article").mapNotNull { it.toSearchResult() }
+        val home     = document.select("#archive-content article, div.items > article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
                 name               = request.name,
