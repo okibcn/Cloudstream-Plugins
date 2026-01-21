@@ -28,7 +28,8 @@ class EstrenosCinesaa : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("$mainUrl/${request.data}/page/$page").documentLarge
-        Log.d("EstrenosCinesaa", "\n${request.name} | $mainUrl/${request.data}/page/$page")
+        Log.d("EstrenosCinesaa", " ")
+        Log.d("EstrenosCinesaa", "${request.name} | $mainUrl/${request.data}/page/$page")
         val home     = document.select("#archive-content article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
@@ -45,26 +46,30 @@ class EstrenosCinesaa : MainAPI() {
             t.uppercase().contains("TV")  -> TvType.TvSeries
             else                          -> TvType.Movie
         }
+        fun cacheImg(t: String): String = "https://wsrv.nl/?url=${t}"
     }
 
     private fun Element.toSearchResult(): SearchResponse {
         val title     = this.selectFirst("h3")!!.text()
         val href      = this.selectFirst("a")!!.attr("href")
-        val posterUrl = fixUrlNull(this.selectFirst("img")?.getImageAttr())
+        val posterUrl = cacheImg(fixUrlNull(this.selectFirst("img")?.getImageAttr()))
         val myType    = getType(this.attr("class"))
-        Log.d("EstrenosCinesaa", "$title | $href | ${this.attr("class")} | $posterUrl")
+        Log.d("EstrenosCinesaa", "$title | $href | ${this.attr("class")}")
         return newAnimeSearchResponse(title, href, myType) {
             this.posterUrl = posterUrl
         }
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
+        Log.d("EstrenosCinesaa", "SEARCH | $query")
         return app.get("${mainUrl}/?s=$query").documentLarge.select("div.result-item").mapNotNull { 
             val title = it.selectFirst("div.title")!!.text()+" ("+ it.selectFirst("span.year")!!.text() +")"
             val href = fixUrl(it.selectFirst("a")!!.attr("href"))
-            val image = it.selectFirst("img")!!.attr("src")
-            newMovieSearchResponse(title, href, getType(it.selectFirst("div.image a span")!!.text())){
-                this.posterUrl = fixUrl(image)
+            val myType = getType(it.selectFirst("div.image a span")!!.text())
+            val image = cacheImg(it.selectFirst("img")!!.attr("src")
+            Log.d("EstrenosCinesaa", "$title | $href | ${it.selectFirst("div.image a span")!!.text()}")
+            newMovieSearchResponse(title, href, myType){
+                this.posterUrl = cacheImg(fixUrl(image))
             }            
         }
     }
