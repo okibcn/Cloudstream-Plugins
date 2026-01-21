@@ -22,5 +22,5 @@ cloudstream {
         "TvSeries",
     )
 
-    iconUrl = "https://osjonosu.xyz/wp-content/uploads/2025/12/Cool-Text-OSJONOSU-366822352288474.png"
+    iconUrl = "https://wsrv.nl/?url=https://osjonosu.xyz/wp-content/uploads/2025/12/Cool-Text-OSJONOSU-366822352288474.png"
 }

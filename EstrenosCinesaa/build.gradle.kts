@@ -22,5 +22,5 @@ cloudstream {
         "TvSeries",
     )
 
-    iconUrl = "https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp"
+    iconUrl = "https://wsrv.nl/?url=https://www.estrenoscinesaa.com/wp-content/uploads/2025/02/EstrenosCinesaa-3.png.webp"
 }

@@ -22,5 +22,5 @@ cloudstream {
         "OVA",
     )
 
-    iconUrl = "https://latanime.org/public/img/logito.png"
+    iconUrl = "https://wsrv.nl/?url=https://latanime.org/public/img/logito.png"
 }
