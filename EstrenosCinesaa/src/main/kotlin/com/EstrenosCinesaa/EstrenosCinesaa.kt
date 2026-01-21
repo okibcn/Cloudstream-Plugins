@@ -28,6 +28,7 @@ class EstrenosCinesaa : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("$mainUrl/${request.data}/page/$page").documentLarge
+        Log.d("EstrenosCinesaa", "\n${request.name} | $mainUrl/${request.data}/page/$page")
         val home     = document.select("#archive-content article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
