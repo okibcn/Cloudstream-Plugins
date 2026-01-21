@@ -66,7 +66,7 @@ class EstrenosCinesaa : MainAPI() {
             val title = it.selectFirst("div.title")!!.text()+" ("+ it.selectFirst("span.year")!!.text() +")"
             val href = fixUrl(it.selectFirst("a")!!.attr("href"))
             val myType = getType(it.selectFirst("div.image a span")!!.text())
-            val image = cacheImg(it.selectFirst("img")!!.attr("src"))
+            val image = it.selectFirst("img")!!.attr("src")
             Log.d("EstrenosCinesaa", "$title | $href | ${it.selectFirst("div.image a span")!!.text()}")
             newMovieSearchResponse(title, href, myType){
                 this.posterUrl = cacheImg(fixUrl(image))
@@ -76,11 +76,10 @@ class EstrenosCinesaa : MainAPI() {
 
     override suspend fun load(url: String): LoadResponse {
         val document    = app.get(url).documentLarge
-        val title       = document.selectFirst("div.title")?.text() ?: "Desconocido"
-        val poster      = document.selectFirst("meta[property=og:image]")?.attr("content")?.trim()
-        val description = document.selectFirst("h2 ~ p.my-2")?.text()
-        val tags        = document.select("a div.btn").map { it.text() }
-        val year        = document.select(".span-tiempo").text().substringAfterLast(" de ").toIntOrNull()
+        val title       = document.selectFirst("h1")?.text() ?: "Desconocido"
+        val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
+        val description = document.selectFirst("div.wp-content")?.text()
+        val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
         val epsAnchor   = document.select("div.row a[href*='/ver/']")
 
         return if (epsAnchor.size > 1) {
