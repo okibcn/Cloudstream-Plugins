@@ -52,7 +52,7 @@ class EstrenosCinesaa : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse {
         val title     = this.selectFirst("h3")!!.text()
         val href      = this.selectFirst("a")!!.attr("href")
-        val posterUrl = cacheImg(fixUrlNull(this.selectFirst("img")?.getImageAttr()))
+        val posterUrl = cacheImg(fixUrl(this.selectFirst("img")?.getImageAttr()))
         val myType    = getType(this.attr("class"))
         Log.d("EstrenosCinesaa", "$title | $href | ${this.attr("class")}")
         return newAnimeSearchResponse(title, href, myType) {
@@ -66,7 +66,7 @@ class EstrenosCinesaa : MainAPI() {
             val title = it.selectFirst("div.title")!!.text()+" ("+ it.selectFirst("span.year")!!.text() +")"
             val href = fixUrl(it.selectFirst("a")!!.attr("href"))
             val myType = getType(it.selectFirst("div.image a span")!!.text())
-            val image = cacheImg(it.selectFirst("img")!!.attr("src")
+            val image = cacheImg(it.selectFirst("img")!!.attr("src"))
             Log.d("EstrenosCinesaa", "$title | $href | ${it.selectFirst("div.image a span")!!.text()}")
             newMovieSearchResponse(title, href, myType){
                 this.posterUrl = cacheImg(fixUrl(image))
