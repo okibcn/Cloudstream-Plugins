@@ -28,7 +28,7 @@ class EstrenosCinesaa : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("$mainUrl/${request.data}/page/$page").documentLarge
-        val home     = document.select("div.archive-content article").mapNotNull { it.toSearchResult() }
+        val home     = document.select("#archive-content article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
                 name               = request.name,
@@ -39,19 +39,21 @@ class EstrenosCinesaa : MainAPI() {
         )
     }
 
+    companion object {
+        fun getType(t: String): TvType = when {
+            t.uppercase().contains("TV")  -> TvType.TvSeries
+            else                          -> TvType.Movie
+        }
+    }
+
     private fun Element.toSearchResult(): SearchResponse {
         val title     = this.selectFirst("h3")!!.text()
         val href      = this.selectFirst("a")!!.attr("href")
         val posterUrl = fixUrlNull(this.selectFirst("img")?.getImageAttr())
-        return newAnimeSearchResponse(title, href, TvType.TvSeries) {
+        val myType    = getType(this.attr("class"))
+        Log.d("EstrenosCinesaa", "$title | $href | ${this.attr("class")} | $posterUrl")
+        return newAnimeSearchResponse(title, href, myType) {
             this.posterUrl = posterUrl
-        }
-    }
-
-    companion object {
-        fun getType(t: String): TvType = when {
-            t.contains("TV")  -> TvType.TvSeries
-            else              -> TvType.Movie
         }
     }
 
