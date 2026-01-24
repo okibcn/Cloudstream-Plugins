@@ -30,12 +30,12 @@ class LATAnimeProvider : MainAPI() {
         "animes?categoria=Película+Latino" to "Películas Latino",
         "animes?categoria=especial" to "Especial",
         "animes?categoria=donghua" to "Donghua",
-        "animes?categoria=sin-censura" to "Sin Censura",
-        "animes?" to "Todo el Anime",
+        "genero/ecchi" to "Sin Censura",
+        "animes" to "Todo el Anime",
     )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val sep      = if (request.data.startsWith('a')) "&" else "?"
+        val sep      = if (request.data.contains('?')) "&" else "?"
         val pagedUrl = "$mainUrl/${request.data}${sep}p=$page"
         val document = app.get(pagedUrl).documentLarge
         val home     = document.select("div.row a").mapNotNull { it.toSearchResult() }
