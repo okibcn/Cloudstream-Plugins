@@ -50,8 +50,9 @@ jobs:
           distribution: "adopt"
           java-version: 17
 
-      # - name: Setup Android SDK
-      #   uses: android-actions/setup-android@v3.2.2
+      - name: Setup Android SDK
+        if: github.event.inputs.debug_enabled == 'true'
+        uses: android-actions/setup-android@v3.2.2
 
       - name: "🔧 Prepare debug session"
         if: github.event.inputs.debug_enabled == 'true'
