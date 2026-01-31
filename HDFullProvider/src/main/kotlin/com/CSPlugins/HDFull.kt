@@ -90,7 +90,7 @@ class HDFull : MainAPI() {
     data class EpisodeJson(
         val episode: String?,
         val season: String?,
-        @JsonProperty("date_aired") val dateAired: String?,
+        @field:JsonProperty("date_aired") val dateAired: String?,
         val thumbnail: String?,
         val permalink: String?,
         val show: Show?,
