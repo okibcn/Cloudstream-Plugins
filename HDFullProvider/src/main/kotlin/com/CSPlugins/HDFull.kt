@@ -17,6 +17,16 @@ import java.time.LocalDate
 import java.util.*
 import java.util.Calendar
 
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.USER_AGENT
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.newSubtitleFile
+import com.lagradost.cloudstream3.utils.*
+import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
+import kotlinx.coroutines.delay
+
+import android.util.Log
+
 class HDFull : MainAPI() {
     override var mainUrl = "https://hdfull.love"
     override var name = "HDFull"
