@@ -215,7 +215,7 @@ class HDFull : MainAPI() {
 
                     if (url.contains("vidmoly")) {
                         Log.d("HDFull", "SOURCE: $url")
-                        VidmolyOki().getUrl(url, data, subtitleCallback,callback)
+                        decodeVidmoly(url, data, subtitleCallback,callback)
                     }else{
                         loadExtractor(url, data, subtitleCallback,callback)
                     }
@@ -295,20 +295,75 @@ class HDFull : MainAPI() {
         }
     }
 
+
+    private fun String.addMarks(str: String): String {
+        return this.replace(Regex("\"?$str\"?"), "\"$str\"")
+    }
+
+    private fun decodeVidmoly(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        Log.d("HDfull","VIDMOLYOKI: input url=$url")
+        val headers  = mapOf(
+            "user-agent"     to USER_AGENT,
+            "Sec-Fetch-Dest" to "iframe"
+        )
+        val newUrl = if(url.contains("/w/"))
+            url.replaceFirst("/w/", "/embed-")+".html"
+            else url
+        Log.d("HDfull","VIDMOLYME: processed url=$newUrl")
+        var script: String? = null;
+        var attemps = 0
+        while (attemps < 10 && script.isNullOrEmpty()){
+            attemps++
+            script = app.get( 
+                newUrl,
+                headers = headers,
+                referer = referer,
+            ).document.select("script")
+                .firstOrNull { it.data().contains("sources:") }?.data()
+            if(script.isNullOrEmpty())
+                delay(500)
+        }
+        val videoData = script?.substringAfter("sources: [")
+            ?.substringBefore("],")?.addMarks("file")
+
+        val subData = script?.substringAfter("tracks: [")?.substringBefore("]")?.addMarks("file")
+            ?.addMarks("label")?.addMarks("kind")
+
+        tryParseJson<Source>(videoData)?.file?.let { m3uLink ->
+            M3u8Helper.generateM3u8(
+                name,
+                m3uLink,
+                "$mainUrl/"
+            ).forEach(callback)
+        }
+
+        tryParseJson<List<SubSource>>("[${subData}]")
+            ?.filter { it.kind == "captions" }?.map {
+                subtitleCallback.invoke(
+                    newSubtitleFile(
+                        it.label.toString(),
+                        fixUrl(it.file.toString())
+                    )
+                )
+            }
+
+    }
+
+    private data class Source(
+        @JsonProperty("file") val file: String? = null,
+    )
+
+    private data class SubSource(
+        @JsonProperty("file") val file: String? = null,
+        @JsonProperty("label") val label: String? = null,
+        @JsonProperty("kind") val kind: String? = null,
+    )
+
+
 }
 
-fun fixHostsLinks(url: String): String {
-    return url
-        .replaceFirst("https://hglink.to", "https://streamwish.to")
-        .replaceFirst("https://swdyu.com", "https://streamwish.to")
-        .replaceFirst("https://cybervynx.com", "https://streamwish.to")
-        .replaceFirst("https://dumbalag.com", "https://streamwish.to")
-        .replaceFirst("https://mivalyo.com", "https://vidhidepro.com")
-        .replaceFirst("https://dinisglows.com", "https://vidhidepro.com")
-        .replaceFirst("https://dhtpre.com", "https://vidhidepro.com")
-        .replaceFirst("https://filemoon.link", "https://filemoon.sx")
-        .replaceFirst("https://sblona.com", "https://watchsb.com")
-        .replaceFirst("https://lulu.st", "https://lulustream.com")
-        .replaceFirst("https://uqload.io", "https://uqload.com")
-        .replaceFirst("https://do7go.com", "https://dood.la")
-}
