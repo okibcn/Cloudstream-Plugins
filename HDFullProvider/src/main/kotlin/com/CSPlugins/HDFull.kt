@@ -213,7 +213,7 @@ class HDFull : MainAPI() {
                 
                 if (url.isNotEmpty()) {
                     Log.d("HDFull", "Extrayendo: $url")
-                    loadExtractor(url, data, subtitleCallback)
+                    loadExtractor(url, data, subtitleCallback,callback)
                     // try {
                     //     loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
                     //         Log.d("HDFull", "✓ Link encontrado: ${link.name}")
