@@ -37,7 +37,7 @@ class VidmolyOki : ExtractorApi() {
             url.replaceFirst("/w/", "/embed-") + ".html" 
             else url
 
-        Log.d("HDFull","VIDMOLYME: processed url=$newUrl")
+        Log.d("HDFull","VIDMOLYOKI: processed url=$newUrl")
 
         val script = app.get(newUrl, headers = headers, referer = referer)
             .document.select("script")
@@ -48,8 +48,9 @@ class VidmolyOki : ExtractorApi() {
         script?.substringAfter("sources: [")
             ?.substringBefore("],")
             ?.addMarks("file")
+            ?.replace("'","\"")
             ?.let { videoData ->
-                Log.d("HDFull","VIDMOLYME: videoData=$videoData")
+                Log.d("HDFull","VIDMOLYOKI: videoData=$videoData")
 
                 tryParseJson<Source>(videoData)?.file?.let { m3uLink ->
                     M3u8Helper.generateM3u8(name, m3uLink, "$mainUrl/")
@@ -62,7 +63,7 @@ class VidmolyOki : ExtractorApi() {
         //     ?.substringBefore("]")
         //     ?.addMarks("file")?.addMarks("label")?.addMarks("kind")
         //     ?.let { subData ->
-        //         Log.d("HDFull","VIDMOLYME: subData=$subData")
+        //         Log.d("HDFull","VIDMOLYOKI: subData=$subData")
         //         tryParseJson<List<SubSource>>("[$subData]")
         //             ?.filter { it.kind == "captions" }
         //             ?.forEach {
