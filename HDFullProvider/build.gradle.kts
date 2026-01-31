@@ -25,9 +25,10 @@ cloudstream {
     iconUrl = "https://hdfullcdn.cc/favicon.ico"
 }
 
-// Configuración actualizada para versiones modernas de Kotlin
+// Configuración para suprimir errores de deprecación
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
     compilerOptions {
         allWarningsAsErrors.set(false)
+        freeCompilerArgs.add("-Xsuppress-version-warnings")
     }
 }
