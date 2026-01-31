@@ -198,6 +198,7 @@ class HDFull : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        Log.d("CS3debug","address: $data")
         val doc = app.get(data, cookies = latestCookie).document
         val hash = doc.select("script").firstOrNull {
             it.html().contains("var ad =")
