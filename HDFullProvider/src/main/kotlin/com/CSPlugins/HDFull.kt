@@ -84,39 +84,6 @@ class HDFull : MainAPI() {
         return document.select("div.view").mapNotNull { it.toSearchResult() }
     }
 
-
-    // override suspend fun search(query: String): List<SearchResponse> {
-    //     val url = "$mainUrl/buscar"
-    //     val csfrDoc = app.post(
-    //         url, cookies = latestCookie, referer = "$mainUrl/buscar", data = mapOf(
-    //             "menu" to "search",
-    //             "query" to query,
-    //         )
-    //     ).document
-    //     val csfr = csfrDoc.selectFirst("input[value*='sid']")!!.attr("value")
-    //     Log.d("TAG", "search: $csfr")
-    //     val doc = app.post(
-    //         url, cookies = latestCookie, referer = "$mainUrl/buscar", data = mapOf(
-    //             "__csrf_magic" to csfr,
-    //             "menu" to "search",
-    //             "query" to query,
-    //         )
-    //     ).document
-    //     Log.d("TAG", "search: $doc")
-    //     return doc.select("div.container div.view").amap {
-    //         val title = it.selectFirst("h5.left a.link")?.attr("title")
-    //         val link = it.selectFirst("h5.left a.link")?.attr("href")
-    //             ?.replaceFirst("/", "$mainUrl/")
-    //         val type = if (link!!.contains("/pelicula")) TvType.Movie else TvType.TvSeries
-    //         val img =
-    //             it.selectFirst("div.item a.spec-border-ie img.img-preview")?.attr("src")
-    //         newTvSeriesSearchResponse(title!!, link!!, type){
-    //             this.posterUrl = fixUrl(img!!)
-    //             this.posterHeaders = mapOf("Referer" to "$mainUrl/")
-    //         }
-    //     }
-    // }
-
     data class EpisodeJson(
         val episode: String?,
         val season: String?,
@@ -222,6 +189,7 @@ class HDFull : MainAPI() {
         }
     }
 
+    @Suppress("DEPRECATION")
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
