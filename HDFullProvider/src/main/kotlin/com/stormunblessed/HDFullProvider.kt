@@ -43,7 +43,7 @@ class HDFullProvider : MainAPI() {
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("$mainUrl/${request.data}$page", cookies = latestCookie).documentLarge
-        val home     = document.select("div.center div.view").mapNotNull { it.toSearchResult() }
+        val home     = document.select("div.view").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list    = HomePageList(
                 name               = request.name,
@@ -59,10 +59,10 @@ class HDFullProvider : MainAPI() {
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href"))
         val type      = if (href?.contains("/pelicula")) TvType.Movie else TvType.TvSeries
         val posterUrl = fixUrlNull(this.selectFirst("a img")?.getImageAttr())
-        val isDub     = this.html().let { it.contains("/spa.") || it.contains("/lat.") }
+        val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
         return newAnimeSearchResponse(title, href, TvType.Anime) {
             this.posterUrl = posterUrl
-            addDubStatus(isDub)
+            if (type == TvType.Movie) addDubStatus(isDub)
         }
     }
 
@@ -76,27 +76,48 @@ class HDFullProvider : MainAPI() {
         ).document
         val csfr = csfrDoc.selectFirst("input[value*='sid']")!!.attr("value")
         Log.d("TAG", "search: $csfr")
-        val doc = app.post(
+        val document = app.post(
             url, cookies = latestCookie, referer = "$mainUrl/buscar", data = mapOf(
                 "__csrf_magic" to csfr,
                 "menu" to "search",
                 "query" to query,
             )
-        ).document
-        Log.d("TAG", "search: $doc")
-        return doc.select("div.container div.view").amap {
-            val title = it.selectFirst("h5.left a.link")?.attr("title")
-            val link = it.selectFirst("h5.left a.link")?.attr("href")
-                ?.replaceFirst("/", "$mainUrl/")
-            val type = if (link!!.contains("/pelicula")) TvType.Movie else TvType.TvSeries
-            val img =
-                it.selectFirst("div.item a.spec-border-ie img.img-preview")?.attr("src")
-            newTvSeriesSearchResponse(title!!, link!!, type){
-                this.posterUrl = fixUrl(img!!)
-                this.posterHeaders = mapOf("Referer" to "$mainUrl/")
-            }
-        }
+        ).documentLarge
+        return document.select("div.view").mapNotNull { it.toSearchResult() }
     }
+
+
+    // override suspend fun search(query: String): List<SearchResponse> {
+    //     val url = "$mainUrl/buscar"
+    //     val csfrDoc = app.post(
+    //         url, cookies = latestCookie, referer = "$mainUrl/buscar", data = mapOf(
+    //             "menu" to "search",
+    //             "query" to query,
+    //         )
+    //     ).document
+    //     val csfr = csfrDoc.selectFirst("input[value*='sid']")!!.attr("value")
+    //     Log.d("TAG", "search: $csfr")
+    //     val doc = app.post(
+    //         url, cookies = latestCookie, referer = "$mainUrl/buscar", data = mapOf(
+    //             "__csrf_magic" to csfr,
+    //             "menu" to "search",
+    //             "query" to query,
+    //         )
+    //     ).document
+    //     Log.d("TAG", "search: $doc")
+    //     return doc.select("div.container div.view").amap {
+    //         val title = it.selectFirst("h5.left a.link")?.attr("title")
+    //         val link = it.selectFirst("h5.left a.link")?.attr("href")
+    //             ?.replaceFirst("/", "$mainUrl/")
+    //         val type = if (link!!.contains("/pelicula")) TvType.Movie else TvType.TvSeries
+    //         val img =
+    //             it.selectFirst("div.item a.spec-border-ie img.img-preview")?.attr("src")
+    //         newTvSeriesSearchResponse(title!!, link!!, type){
+    //             this.posterUrl = fixUrl(img!!)
+    //             this.posterHeaders = mapOf("Referer" to "$mainUrl/")
+    //         }
+    //     }
+    // }
 
     data class EpisodeJson(
         val episode: String?,
