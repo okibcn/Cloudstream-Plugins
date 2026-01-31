@@ -8,9 +8,6 @@ import com.lagradost.cloudstream3.utils.AppUtils
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import com.lagradost.cloudstream3.utils.newExtractorLink
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 import org.json.JSONObject
 import org.jsoup.nodes.Element
 import java.time.LocalDate
@@ -244,16 +241,17 @@ class HDFull : MainAPI() {
                 if (url.isNotEmpty()) {
                     loadExtractor(url, mainUrl, subtitleCallback) { link ->
                         callback.invoke(
-                            ExtractorLink(
+                            newExtractorLink(
                                 "${item.lang}[${link.source}]",
                                 "${item.lang}[${link.source}]",
                                 link.url,
-                                link.referer ?: mainUrl,
-                                link.quality,
-                                link.type,
-                                link.headers,
-                                link.extractorData
-                            )
+                            ) {
+                                this.quality = link.quality
+                                this.type = link.type
+                                this.referer = link.referer
+                                this.headers = link.headers
+                                this.extractorData = link.extractorData
+                            }
                         )
                     }
                 }
