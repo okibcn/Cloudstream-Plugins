@@ -1,4 +1,4 @@
-package com.stormunblessed
+package com.CSPlugins
 
 import android.util.Base64
 import android.util.Log
@@ -16,7 +16,7 @@ import java.time.LocalDate
 import java.util.Calendar
 import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
-class HDFullProvider : MainAPI() {
+class HDFull : MainAPI() {
     override var mainUrl = "https://hdfull.love"
     override var name = "HDFull"
     override var lang = "es"
