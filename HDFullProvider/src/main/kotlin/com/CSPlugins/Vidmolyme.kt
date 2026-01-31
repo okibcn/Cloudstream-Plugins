@@ -13,7 +13,7 @@ import android.util.Log
 
 
 class Vidmolyme : ExtractorApi() {
-    override val name = "Vidmoly"
+    override val name = "Vidmolyme"
     override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
 
@@ -34,13 +34,13 @@ class Vidmolyme : ExtractorApi() {
         val newUrl = if(url.contains("/w/"))
             url.replaceFirst("/w/", "/embed-")+".html"
             else url
-        Log.d("HDfull","VIDMOLY: input url=$url")
-        Log.d("HDfull","VIDMOLY: processed url=$newUrl")
+        Log.d("HDfull","VIDMOLYME: input url=$url")
+        Log.d("HDfull","VIDMOLYME: processed url=$newUrl")
         var script: String? = null;
         var attemps = 0
         while (attemps < 10 && script.isNullOrEmpty()){
             attemps++
-            script = app.get(
+            script = app.get( 
                 newUrl,
                 headers = headers,
                 referer = referer,
