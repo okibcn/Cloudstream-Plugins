@@ -11,13 +11,10 @@ import kotlinx.coroutines.delay
 
 import android.util.Log
 
-class Vidmolyme : Vidmoly() {
-    override val mainUrl = "https://vidmoly.me"
-}
 
-open class Vidmoly : ExtractorApi() {
+class Vidmolyme : ExtractorApi() {
     override val name = "Vidmoly"
-    override val mainUrl = "https://vidmoly.to"
+    override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
 
     private fun String.addMarks(str: String): String {
@@ -35,7 +32,7 @@ open class Vidmoly : ExtractorApi() {
             "Sec-Fetch-Dest" to "iframe"
         )
         val newUrl = if(url.contains("/w/"))
-            url.replaceFirst("/w/", "/embed-")+"-920x360.html"
+            url.replaceFirst("/w/", "/embed-")+".html"
             else url
         Log.d("HDfull","VIDMOLY: input url=$url")
         Log.d("HDfull","VIDMOLY: processed url=$newUrl")

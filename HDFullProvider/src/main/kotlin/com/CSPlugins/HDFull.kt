@@ -283,7 +283,6 @@ class HDFull : MainAPI() {
             "1" -> "https://powvideo.org/$id"
             "2" -> "https://streamplay.to/$id"
             "6" -> "https://streamtape.com/v/$id"
-            "10" -> "https://dood.li/e/$id"
             "12" -> "https://gamovideo.com/$id"
             "15" -> "https://mixdrop.bz/f/$id"
             "40" -> "https://vidmoly.me/w/$id"
@@ -307,5 +306,4 @@ fun fixHostsLinks(url: String): String {
         .replaceFirst("https://lulu.st", "https://lulustream.com")
         .replaceFirst("https://uqload.io", "https://uqload.com")
         .replaceFirst("https://do7go.com", "https://dood.la")
-        .replaceFirst("https://vidmoly.biz", "https://vidmoly.me")
 }
