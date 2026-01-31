@@ -28,39 +28,42 @@ class HDFullProvider : MainAPI() {
         TvType.TvSeries,
     )
 
-//    usr:yji0r4c6 pass:@1YU1kc1
+    //  usr:yji0r4c6 pass:@1YU1kc1
     var latestCookie: Map<String, String> = mapOf(
         "language" to "es",
         "PHPSESSID" to "hqh4vktr8m29pfd1dsthiatpk0",
         "guid" to "1525945|2fc755227682457813590604c5a6717d",
     )
 
-    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse? {
-        val items = ArrayList<HomePageList>()
-        val urls = listOf(
-            Pair("Películas Estreno", "$mainUrl/peliculas-estreno"),
-            Pair("Películas Actualizadas", "$mainUrl/peliculas-actualizadas"),
-//            Pair("Top IMDB", "$mainUrl/peliculas/imdb_rating"),
-            Pair("Series", "$mainUrl/series"),
+    override val mainPage = mainPageOf(
+        "peliculas-estreno" to "Estrenos Cine",
+        "peliculas/date/" to "Películas",
+        "series/date/" to "Series",
+    )
+
+    override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
+        val document = app.get("$mainUrl/${request.data}$page", cookies = latestCookie).documentLarge
+        val home     = document.select("div.center div.view").mapNotNull { it.toSearchResult() }
+        return newHomePageResponse(
+            list    = HomePageList(
+                name               = request.name,
+                list               = home,
+                isHorizontalImages = false
+            ),
+            hasNext = request.data.contains("/")
         )
-        urls.amap { (name, url) ->
-            val doc = app.get(url, cookies = latestCookie).document
-            val home =
-                doc.select("div.center div.view").amap {
-                    val title = it.selectFirst("h5.left a.link")?.attr("title")
-                    val link = it.selectFirst("h5.left a.link")?.attr("href")
-                        ?.replaceFirst("/", "$mainUrl/")
-                    val type = if (link!!.contains("/pelicula")) TvType.Movie else TvType.TvSeries
-                    val img =
-                        it.selectFirst("div.item a.spec-border-ie img.img-preview")?.attr("src")
-                    newTvSeriesSearchResponse(title!!, link, type){
-                        this.posterUrl = fixUrl(img!!)
-                        this.posterHeaders = mapOf("Referer" to "$mainUrl/")
-                    }
-                }
-            items.add(HomePageList(name, home))
+    }
+
+    private fun Element.toSearchResult(): SearchResponse {
+        val title     = this.selectFirst("h5 a")?.text()
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href"))
+        val type      = if (href?.contains("/pelicula")) TvType.Movie else TvType.TvSeries
+        val posterUrl = fixUrlNull(this.selectFirst("a img")?.getImageAttr())
+        val isDub     = this.html().let { it.contains("/spa.") || it.contains("/lat.") }
+        return newAnimeSearchResponse(title, href, TvType.Anime) {
+            this.posterUrl = posterUrl
+            addDubStatus(isDub)
         }
-        return newHomePageResponse(items)
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
