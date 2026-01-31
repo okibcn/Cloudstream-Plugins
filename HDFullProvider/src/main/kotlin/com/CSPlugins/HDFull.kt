@@ -200,23 +200,28 @@ class HDFull : MainAPI() {
     ): Boolean {
         val doc = app.get(data, cookies = latestCookie).document
         
-        // Log para debug
         Log.d("HDFull", "URL: $data")
-        Log.d("HDFull", "Scripts encontrados: ${doc.select("script").size}")
         
         val hash = doc.select("script").firstOrNull {
             it.html().contains("var ad =")
         }?.html()?.substringAfter("var ad = '")
             ?.substringBefore("';")
         
-        Log.d("HDFull", "Hash encontrado: $hash")
+        Log.d("HDFull", "Hash encontrado: ${hash?.take(50)}...") // Solo primeros 50 caracteres
         
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
-            json.forEach { item ->
+            Log.d("HDFull", "JSON decodificado - Total items: ${json.size}")
+            
+            json.forEachIndexed { index, item ->
+                Log.d("HDFull", "Item $index - Provider: ${item.provider}, Code: ${item.code}, Lang: ${item.lang}, Quality: ${item.quality}")
+                
                 val url = getUrlByProvider(item.provider, item.code)
+                Log.d("HDFull", "URL generada: $url")
+                
                 if (url.isNotEmpty()) {
                     loadExtractor(url, mainUrl, subtitleCallback) { link ->
+                        Log.d("HDFull", "Link extraído: ${link.name} - ${link.url}")
                         CoroutineScope(Dispatchers.IO).launch {
                             callback.invoke(
                                 newExtractorLink(
@@ -233,14 +238,13 @@ class HDFull : MainAPI() {
                             )
                         }
                     }
+                } else {
+                    Log.d("HDFull", "URL vacía para provider: ${item.provider}")
                 }
             }
-        } else {
-            Log.d("HDFull", "No se encontró hash en la página")
         }
         return true
     }
-
 
     data class ProviderCode(
         val id: String,
