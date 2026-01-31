@@ -212,29 +212,30 @@ class HDFull : MainAPI() {
                 val url = getUrlByProvider(item.provider, item.code)
                 
                 if (url.isNotEmpty()) {
-                    Log.d("HDFull", "Extrayendo: $url con referer: $data")
-                    try {
-                        loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
-                            Log.d("HDFull", "✓ Link encontrado: ${link.name}")
-                            CoroutineScope(Dispatchers.IO).launch {
-                                callback.invoke(
-                                    newExtractorLink(
-                                        name = "${item.lang}[${link.source}]",
-                                        source = "${item.lang}[${link.source}]",
-                                        url = link.url,
-                                    ) {
-                                        this.quality = link.quality
-                                        this.type = link.type
-                                        this.referer = link.referer
-                                        this.headers = link.headers
-                                        this.extractorData = link.extractorData
-                                    }
-                                )
-                            }
-                        }
-                    } catch (e: Exception) {
-                        Log.e("HDFull", "Error: ${e.message}")
-                    }
+                    Log.d("HDFull", "Extrayendo: $url")
+                    loadExtractor(url, data, subtitleCallback)
+                    // try {
+                    //     loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
+                    //         Log.d("HDFull", "✓ Link encontrado: ${link.name}")
+                    //         CoroutineScope(Dispatchers.IO).launch {
+                    //             callback.invoke(
+                    //                 newExtractorLink(
+                    //                     name = "${item.lang}[${link.source}]",
+                    //                     source = "${item.lang}[${link.source}]",
+                    //                     url = link.url,
+                    //                 ) {
+                    //                     this.quality = link.quality
+                    //                     this.type = link.type
+                    //                     this.referer = link.referer
+                    //                     this.headers = link.headers
+                    //                     this.extractorData = link.extractorData
+                    //                 }
+                    //             )
+                    //         }
+                    //     }
+                    // } catch (e: Exception) {
+                    //     Log.e("HDFull", "Error: ${e.message}")
+                    // }
                 }
             }
         }
