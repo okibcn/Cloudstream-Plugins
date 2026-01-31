@@ -55,11 +55,11 @@ class HDFull : MainAPI() {
         )
     }
 
-    private fun Element.toSearchResult(): SearchResponse {
-        val title     = this.selectFirst("h5 a")?.text()
-        val href      = fixUrlNull(this.selectFirst("a")?.attr("href"))
-        val type      = if (href?.contains("/pelicula")) TvType.Movie else TvType.TvSeries
-        val posterUrl = fixUrlNull(this.selectFirst("a img")?.getImageAttr())
+    private fun Element.toSearchResult(): SearchResponse? {
+        val title     = this.selectFirst("h5 a")?.text() ?: "Desconocido"
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val type      = if (href.contains("/pelicula")) TvType.Movie else TvType.TvSeries
+        val posterUrl = fixUrlNull(this.selectFirst("a img")?.attr("src"))
         val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
         return newAnimeSearchResponse(title, href, type) {
             this.posterUrl = posterUrl
