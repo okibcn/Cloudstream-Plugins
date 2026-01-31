@@ -34,7 +34,7 @@ class HDFull : MainAPI() {
     )
 
     override val mainPage = mainPageOf(
-        "peliculas-estreno" to "Estrenos Cine",
+        "peliculas-estreno/date/" to "Estrenos Cine",
         "peliculas/date/" to "Películas",
         "series/date/" to "Series",
     )
@@ -48,7 +48,7 @@ class HDFull : MainAPI() {
                 list               = home,
                 isHorizontalImages = false
             ),
-            hasNext = request.data.contains("/")
+            hasNext = not request.data.contains("estreno")
         )
     }
 
@@ -241,17 +241,10 @@ class HDFull : MainAPI() {
                 if (url.isNotEmpty()) {
                     loadExtractor(url, mainUrl, subtitleCallback) { link ->
                         callback.invoke(
-                            newExtractorLink(
-                                "${item.lang}[${link.source}]",
-                                "${item.lang}[${link.source}]",
-                                link.url,
-                            ) {
-                                this.quality = link.quality
-                                this.type = link.type
-                                this.referer = link.referer
-                                this.headers = link.headers
-                                this.extractorData = link.extractorData
-                            }
+                            link.copy(
+                                source = "${item.lang}[${link.source}]",
+                                name = "${item.lang}[${link.source}]"
+                            )
                         )
                     }
                 }
