@@ -44,7 +44,7 @@ class VidmolyOki : ExtractorApi() {
             .firstOrNull { it.data().contains("sources:") }
             ?.data()
         
-        // Extraer y parsear videoData
+        // Extracts and parses videoData
         script?.substringAfter("sources: [")
             ?.substringBefore("],")
             ?.addMarks("file")
@@ -58,19 +58,19 @@ class VidmolyOki : ExtractorApi() {
             }
         
         // Extraer y parsear subtítulos
-        script?.substringAfter("tracks: [")
-            ?.substringBefore("]")
-            ?.addMarks("file")?.addMarks("label")?.addMarks("kind")
-            ?.let { subData ->
-                Log.d("HDFull","VIDMOLYME: subData=$subData")
-                tryParseJson<List<SubSource>>("[$subData]")
-                    ?.filter { it.kind == "captions" }
-                    ?.forEach {
-                        subtitleCallback(
-                            newSubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
-                        )
-                    }
-            }
+        // script?.substringAfter("tracks: [")
+        //     ?.substringBefore("]")
+        //     ?.addMarks("file")?.addMarks("label")?.addMarks("kind")
+        //     ?.let { subData ->
+        //         Log.d("HDFull","VIDMOLYME: subData=$subData")
+        //         tryParseJson<List<SubSource>>("[$subData]")
+        //             ?.filter { it.kind == "captions" }
+        //             ?.forEach {
+        //                 subtitleCallback(
+        //                     newSubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
+        //                 )
+        //             }
+        //     }
     }
 
     private data class Source(
