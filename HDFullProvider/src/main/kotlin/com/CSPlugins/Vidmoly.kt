@@ -9,6 +9,8 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import kotlinx.coroutines.delay
 
+import android.util.Log
+
 class Vidmolyme : Vidmoly() {
     override val mainUrl = "https://vidmoly.me"
 }
