@@ -16,7 +16,6 @@ import org.jsoup.nodes.Element
 import java.time.LocalDate
 import java.util.*
 import java.util.Calendar
-import kotlin.reflect.jvm.internal.impl.load.kotlin.JvmType
 
 class HDFull : MainAPI() {
     override var mainUrl = "https://hdfull.love"
@@ -62,7 +61,7 @@ class HDFull : MainAPI() {
         val type      = if (href?.contains("/pelicula")) TvType.Movie else TvType.TvSeries
         val posterUrl = fixUrlNull(this.selectFirst("a img")?.getImageAttr())
         val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
-        return newAnimeSearchResponse(title, href, TvType.Anime) {
+        return newAnimeSearchResponse(title, href, type) {
             this.posterUrl = posterUrl
             if (type == TvType.Movie) addDubStatus(isDub)
         }
@@ -308,21 +307,19 @@ suspend fun loadSourceNameExtractor(
     callback: (ExtractorLink) -> Unit,
 ) {
     loadExtractor(url, referer, subtitleCallback) { link ->
-        CoroutineScope(Dispatchers.IO).launch {
-            callback.invoke(
-                newExtractorLink(
-                    "$source[${link.source}]",
-                    "$source[${link.source}]",
-                    link.url,
-                ) {
-                    this.quality = link.quality
-                    this.type = link.type
-                    this.referer = link.referer
-                    this.headers = link.headers
-                    this.extractorData = link.extractorData
-                }
-            )
-        }
+        callback.invoke(
+            newExtractorLink(
+                "$source[${link.source}]",
+                "$source[${link.source}]",
+                link.url,
+            ) {
+                this.quality = link.quality
+                this.type = link.type
+                this.referer = link.referer
+                this.headers = link.headers
+                this.extractorData = link.extractorData
+            }
+        )
     }
 }
 
