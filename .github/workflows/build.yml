@@ -1,6 +1,5 @@
 name: Build
 
-# https://docs.github.com/en/actions/learn-github-actions/workflow-syntax-for-github-actions#concurrency
 concurrency: 
   group: "build"
   cancel-in-progress: true
@@ -17,7 +16,6 @@ on:
         default: false
         type: boolean
     branches:
-      # choose your default branch
       - master
       - main
     paths-ignore:
@@ -26,29 +24,36 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # container: saschpe/android-sdk:35-jdk17.0.14_7
     steps:
 
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           path: "src"
 
+      - name: Prepares executable
+        run: chmod +x $GITHUB_WORKSPACE/src/gradlew
+
       - name: Checkout builds
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
         with:
           ref: "builds"
           path: "builds"
 
       - name: Clean old builds
-        run: |
-          rm $GITHUB_WORKSPACE/builds/*.cs3 || true
+        run: rm $GITHUB_WORKSPACE/builds/*.cs3 || true
 
       - name: Setup JDK 17
-        uses: actions/setup-java@v4.6.0
+        uses: actions/setup-java@v4
         with:
-          distribution: "adopt"
+          distribution: "temurin"
           java-version: 17
+
+      # ⭐ NUEVA ACCIÓN: Setup Gradle con caching automático
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.ref != 'refs/heads/main' && github.ref != 'refs/heads/master' }}
 
       - name: Setup Android SDK
         if: github.event.inputs.debug_enabled == 'true'
@@ -56,7 +61,6 @@ jobs:
 
       - name: "🔧 Prepare debug session"
         if: github.event.inputs.debug_enabled == 'true'
-        # continue-on-error: true
         run: |
           sudo apt install zsh zsh-syntax-highlighting
           sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/posh-linux-amd64 -O /usr/local/bin/oh-my-posh
@@ -76,7 +80,6 @@ jobs:
       - name: Build Plugins
         run: |
           cd $GITHUB_WORKSPACE/src
-          chmod +x gradlew
           ./gradlew make makePluginsJson
           cp **/build/*.cs3 $GITHUB_WORKSPACE/builds
           cp build/plugins.json $GITHUB_WORKSPACE/builds
@@ -87,6 +90,5 @@ jobs:
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
           git add .
-          git commit --amend -m "Build $GITHUB_SHA" ||  exit 0   # do not error if nothing to commit
+          git commit --amend -m "Build $GITHUB_SHA" || exit 0
           git push --force
-  
