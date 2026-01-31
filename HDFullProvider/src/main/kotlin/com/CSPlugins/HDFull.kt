@@ -48,7 +48,7 @@ class HDFull : MainAPI() {
                 list               = home,
                 isHorizontalImages = false
             ),
-            hasNext = not request.data.contains("estreno")
+            hasNext = !request.data.contains("estreno")
         )
     }
 
@@ -241,9 +241,15 @@ class HDFull : MainAPI() {
                 if (url.isNotEmpty()) {
                     loadExtractor(url, mainUrl, subtitleCallback) { link ->
                         callback.invoke(
-                            link.copy(
-                                source = "${item.lang}[${link.source}]",
-                                name = "${item.lang}[${link.source}]"
+                            ExtractorLink(
+                                "${item.lang}[${link.source}]",
+                                "${item.lang}[${link.source}]",
+                                link.url,
+                                link.referer ?: mainUrl,
+                                link.quality,
+                                link.type,
+                                link.headers,
+                                link.extractorData
                             )
                         )
                     }
