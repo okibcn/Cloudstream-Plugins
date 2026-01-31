@@ -198,13 +198,19 @@ class HDFull : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        Log.d("CS3debug","address: $data")
         val doc = app.get(data, cookies = latestCookie).document
+        
+        // Log para debug
+        Log.d("HDFull", "URL: $data")
+        Log.d("HDFull", "Scripts encontrados: ${doc.select("script").size}")
+        
         val hash = doc.select("script").firstOrNull {
             it.html().contains("var ad =")
         }?.html()?.substringAfter("var ad = '")
             ?.substringBefore("';")
-            
+        
+        Log.d("HDFull", "Hash encontrado: $hash")
+        
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
             json.forEach { item ->
@@ -229,9 +235,12 @@ class HDFull : MainAPI() {
                     }
                 }
             }
+        } else {
+            Log.d("HDFull", "No se encontró hash en la página")
         }
         return true
     }
+
 
     data class ProviderCode(
         val id: String,
