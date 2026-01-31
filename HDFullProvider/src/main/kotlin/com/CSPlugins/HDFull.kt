@@ -220,23 +220,29 @@ class HDFull : MainAPI() {
                 Log.d("HDFull", "URL generada: $url")
                 
                 if (url.isNotEmpty()) {
-                    loadExtractor(url, mainUrl, subtitleCallback) { link ->
-                        Log.d("HDFull", "Link extraído: ${link.name} - ${link.url}")
-                        CoroutineScope(Dispatchers.IO).launch {
-                            callback.invoke(
-                                newExtractorLink(
-                                    name = "${item.lang}[${link.source}]",
-                                    source = "${item.lang}[${link.source}]",
-                                    url = link.url,
-                                ) {
-                                    this.quality = link.quality
-                                    this.type = link.type
-                                    this.referer = link.referer
-                                    this.headers = link.headers
-                                    this.extractorData = link.extractorData
-                                }
-                            )
+                    Log.d("HDFull", "Intentando extraer de: $url")
+                    try {
+                        loadExtractor(url, mainUrl, subtitleCallback) { link ->
+                            Log.d("HDFull", "✓ Link extraído exitosamente: ${link.name} - ${link.url}")
+                            CoroutineScope(Dispatchers.IO).launch {
+                                callback.invoke(
+                                    newExtractorLink(
+                                        name = "${item.lang}[${link.source}]",
+                                        source = "${item.lang}[${link.source}]",
+                                        url = link.url,
+                                    ) {
+                                        this.quality = link.quality
+                                        this.type = link.type
+                                        this.referer = link.referer
+                                        this.headers = link.headers
+                                        this.extractorData = link.extractorData
+                                    }
+                                )
+                            }
                         }
+                        Log.d("HDFull", "loadExtractor completado para: $url")
+                    } catch (e: Exception) {
+                        Log.e("HDFull", "✗ Error al extraer de $url: ${e.message}")
                     }
                 } else {
                     Log.d("HDFull", "URL vacía para provider: ${item.provider}")
