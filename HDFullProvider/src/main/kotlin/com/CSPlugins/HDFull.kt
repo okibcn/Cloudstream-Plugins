@@ -200,31 +200,22 @@ class HDFull : MainAPI() {
     ): Boolean {
         val doc = app.get(data, cookies = latestCookie).document
         
-        Log.d("HDFull", "URL: $data")
-        
         val hash = doc.select("script").firstOrNull {
             it.html().contains("var ad =")
         }?.html()?.substringAfter("var ad = '")
             ?.substringBefore("';")
         
-        Log.d("HDFull", "Hash encontrado: ${hash?.take(50)}...") // Solo primeros 50 caracteres
-        
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
-            Log.d("HDFull", "JSON decodificado - Total items: ${json.size}")
-            Log.d("HDFull", "Referer que se usará: $data")  // Agregar esto
             
-            json.forEachIndexed { index, item ->
-                Log.d("HDFull", "Item $index - Provider: ${item.provider}, Code: ${item.code}, Lang: ${item.lang}, Quality: ${item.quality}")
-                
+            json.amap { item ->  // Cambiar forEach por amap
                 val url = getUrlByProvider(item.provider, item.code)
-                Log.d("HDFull", "URL generada: $url")
                 
                 if (url.isNotEmpty()) {
-                    Log.d("HDFull", "Intentando extraer de: $url")
+                    Log.d("HDFull", "Extrayendo: $url con referer: $data")
                     try {
-                        loadExtractor(url, data, subtitleCallback) { link ->
-                            Log.d("HDFull", "✓ Link extraído exitosamente: ${link.name} - ${link.url}")
+                        loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
+                            Log.d("HDFull", "✓ Link encontrado: ${link.name}")
                             CoroutineScope(Dispatchers.IO).launch {
                                 callback.invoke(
                                     newExtractorLink(
@@ -241,12 +232,9 @@ class HDFull : MainAPI() {
                                 )
                             }
                         }
-                        Log.d("HDFull", "loadExtractor completado para: $url")
                     } catch (e: Exception) {
-                        Log.e("HDFull", "✗ Error al extraer de $url: ${e.message}")
+                        Log.e("HDFull", "Error: ${e.message}")
                     }
-                } else {
-                    Log.d("HDFull", "URL vacía para provider: ${item.provider}")
                 }
             }
         }
