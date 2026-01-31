@@ -25,7 +25,6 @@ import com.lagradost.cloudstream3.utils.*
 import com.lagradost.cloudstream3.utils.AppUtils.tryParseJson
 import kotlinx.coroutines.delay
 
-import android.util.Log
 
 class HDFull : MainAPI() {
     override var mainUrl = "https://hdfull.love"
