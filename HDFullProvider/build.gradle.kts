@@ -1,7 +1,6 @@
 // use an integer for version numbers
 version = 5
 
-
 cloudstream {
     language = "es"
     // All of these properties are optional, you can safely remove them
@@ -23,12 +22,4 @@ cloudstream {
     )
 
     iconUrl = "https://hdfullcdn.cc/favicon.ico"
-}
-
-// Configuración para suprimir errores de deprecación
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-    compilerOptions {
-        allWarningsAsErrors.set(false)
-        freeCompilerArgs.add("-Xsuppress-version-warnings")
-    }
 }
