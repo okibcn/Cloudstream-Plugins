@@ -12,7 +12,7 @@ import kotlinx.coroutines.delay
 import android.util.Log
 
 
-class Vidmolyme : ExtractorApi() {
+class VidmolyOki : ExtractorApi() {
     override val name = "Vidmolyme"
     override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true

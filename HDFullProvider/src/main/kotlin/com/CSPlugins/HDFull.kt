@@ -215,12 +215,12 @@ class HDFull : MainAPI() {
 
                     if (url.contains("vidmoly")) {
                         Log.d("HDFull", "SOURCE: $url")
-                        Vidmolyme().getUrl(url, data, subtitleCallback,callback)
+                        VidmolyOki().getUrl(url, data, subtitleCallback,callback)
                     }else{
                         loadExtractor(url, data, subtitleCallback,callback)
                     }
                     // try {
-                    //     loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
+                    //     loadExtractor(url, data, subtitleCallback) { link ->
                     //         Log.d("HDFull", "✓ Link encontrado: ${link.name}")
                     //         CoroutineScope(Dispatchers.IO).launch {
                     //             callback.invoke(
