@@ -27,51 +27,50 @@ class VidmolyOki : ExtractorApi() {
         callback: (ExtractorLink) -> Unit
     ) {
         Log.d("HDFull","VIDMOLYOKI: input url=$url")
-        val headers  = mapOf(
-            "user-agent"     to USER_AGENT,
+
+        val headers = mapOf(
+            "user-agent" to USER_AGENT,
             "Sec-Fetch-Dest" to "iframe"
         )
-        val newUrl = if(url.contains("/w/"))
-            url.replaceFirst("/w/", "/embed-")+".html"
+        
+        val newUrl = if (url.contains("/w/")) 
+            url.replaceFirst("/w/", "/embed-") + ".html" 
             else url
+
         Log.d("HDFull","VIDMOLYME: processed url=$newUrl")
-        var script: String? = null;
-        var attemps = 0
-        while (attemps < 10 && script.isNullOrEmpty()){
-            attemps++
-            script = app.get( 
-                newUrl,
-                headers = headers,
-                referer = referer,
-            ).document.select("script")
-                .firstOrNull { it.data().contains("sources:") }?.data()
-            if(script.isNullOrEmpty())
-                delay(500)
-        }
-        val videoData = script?.substringAfter("sources: [")
-            ?.substringBefore("],")?.addMarks("file")
 
-        val subData = script?.substringAfter("tracks: [")?.substringBefore("]")?.addMarks("file")
-            ?.addMarks("label")?.addMarks("kind")
+        val script = app.get(newUrl, headers = headers, referer = referer)
+            .document.select("script")
+            .firstOrNull { it.data().contains("sources:") }
+            ?.data()
+        
+        // Extraer y parsear videoData
+        script?.substringAfter("sources: [")
+            ?.substringBefore("],")
+            ?.addMarks("file")
+            ?.let { videoData ->
+                Log.d("HDFull","VIDMOLYME: videoData=$videoData")
 
-        tryParseJson<Source>(videoData)?.file?.let { m3uLink ->
-            M3u8Helper.generateM3u8(
-                name,
-                m3uLink,
-                "$mainUrl/"
-            ).forEach(callback)
-        }
-
-        tryParseJson<List<SubSource>>("[${subData}]")
-            ?.filter { it.kind == "captions" }?.map {
-                subtitleCallback.invoke(
-                    newSubtitleFile(
-                        it.label.toString(),
-                        fixUrl(it.file.toString())
-                    )
-                )
+                tryParseJson<Source>(videoData)?.file?.let { m3uLink ->
+                    M3u8Helper.generateM3u8(name, m3uLink, "$mainUrl/")
+                        .forEach(callback)
+                }
             }
-
+        
+        // Extraer y parsear subtítulos
+        script?.substringAfter("tracks: [")
+            ?.substringBefore("]")
+            ?.addMarks("file")?.addMarks("label")?.addMarks("kind")
+            ?.let { subData ->
+                Log.d("HDFull","VIDMOLYME: subData=$subData")
+                tryParseJson<List<SubSource>>("[$subData]")
+                    ?.filter { it.kind == "captions" }
+                    ?.forEach {
+                        subtitleCallback(
+                            newSubtitleFile(it.label.toString(), fixUrl(it.file.toString()))
+                        )
+                    }
+            }
     }
 
     private data class Source(
