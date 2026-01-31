@@ -208,35 +208,32 @@ class HDFull : MainAPI() {
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
             
-            json.amap { item ->  // Cambiar forEach por amap
+            json.amap { item ->
                 val url = getUrlByProvider(item.provider, item.code)
                 
                 if (url.isNotEmpty()) {
-
-                    if (url.contains("vidmoly")) Log.d("HDFull", "SOURCE: $url")
                     loadExtractor(url, data, subtitleCallback,callback)
-                    // try {
-                    //     loadExtractor(url, data, subtitleCallback) { link ->  // Usar data como referer
-                    //         Log.d("HDFull", "✓ Link encontrado: ${link.name}")
-                    //         CoroutineScope(Dispatchers.IO).launch {
-                    //             callback.invoke(
-                    //                 newExtractorLink(
-                    //                     name = "${item.lang}[${link.source}]",
-                    //                     source = "${item.lang}[${link.source}]",
-                    //                     url = link.url,
-                    //                 ) {
-                    //                     this.quality = link.quality
-                    //                     this.type = link.type
-                    //                     this.referer = link.referer
-                    //                     this.headers = link.headers
-                    //                     this.extractorData = link.extractorData
-                    //                 }
-                    //             )
-                    //         }
-                    //     }
-                    // } catch (e: Exception) {
-                    //     Log.e("HDFull", "Error: ${e.message}")
-                    // }
+                    try {
+                        loadExtractor(url, data, subtitleCallback) { link -> 
+                            CoroutineScope(Dispatchers.IO).launch {
+                                callback.invoke(
+                                    newExtractorLink(
+                                        name = "${item.lang}[${link.source}]",
+                                        source = "${item.lang}[${link.source}]",
+                                        url = link.url,
+                                    ) {
+                                        this.quality = link.quality
+                                        this.type = link.type
+                                        this.referer = link.referer
+                                        this.headers = link.headers
+                                        this.extractorData = link.extractorData
+                                    }
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("HDFull", "Error: ${e.message}")
+                    }
                 }
             }
         }
