@@ -27,6 +27,7 @@ class VidmolyOki : ExtractorApi() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ) {
+        Log.d("HDfull","VIDMOLYOKI: input url=$url")
         val headers  = mapOf(
             "user-agent"     to USER_AGENT,
             "Sec-Fetch-Dest" to "iframe"
@@ -34,7 +35,6 @@ class VidmolyOki : ExtractorApi() {
         val newUrl = if(url.contains("/w/"))
             url.replaceFirst("/w/", "/embed-")+".html"
             else url
-        Log.d("HDfull","VIDMOLYME: input url=$url")
         Log.d("HDfull","VIDMOLYME: processed url=$newUrl")
         var script: String? = null;
         var attemps = 0
