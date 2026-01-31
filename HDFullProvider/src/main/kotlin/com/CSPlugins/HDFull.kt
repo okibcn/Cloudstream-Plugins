@@ -212,6 +212,7 @@ class HDFull : MainAPI() {
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
             Log.d("HDFull", "JSON decodificado - Total items: ${json.size}")
+            Log.d("HDFull", "Referer que se usará: $data")  // Agregar esto
             
             json.forEachIndexed { index, item ->
                 Log.d("HDFull", "Item $index - Provider: ${item.provider}, Code: ${item.code}, Lang: ${item.lang}, Quality: ${item.quality}")
@@ -222,7 +223,7 @@ class HDFull : MainAPI() {
                 if (url.isNotEmpty()) {
                     Log.d("HDFull", "Intentando extraer de: $url")
                     try {
-                        loadExtractor(url, mainUrl, subtitleCallback) { link ->
+                        loadExtractor(url, data, subtitleCallback) { link ->
                             Log.d("HDFull", "✓ Link extraído exitosamente: ${link.name} - ${link.url}")
                             CoroutineScope(Dispatchers.IO).launch {
                                 callback.invoke(

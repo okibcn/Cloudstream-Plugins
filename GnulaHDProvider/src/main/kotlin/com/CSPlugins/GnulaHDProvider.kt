@@ -134,7 +134,7 @@ class GnulaHDProvider : MainAPI() {
             .map { it.groupValues[1] }
             .map { base64Decode(it) }
             .forEach { decodedUrl ->
-                Log.d("depurando", "loadLinks: urlDecoded=$decodedUrl")
+                Log.d("GnulaHD", "loadLinks: urlDecoded=$decodedUrl")
                 loadExtractor(decodedUrl, mainUrl, subtitleCallback, callback)
             }
         return true
