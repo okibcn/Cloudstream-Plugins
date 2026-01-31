@@ -232,17 +232,30 @@ class HDFull : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val doc = app.get(data, cookies = latestCookie).document
-        val hash =
-            doc.select("script").firstOrNull {
-                it.html().contains("var ad =")
-            }?.html()?.substringAfter("var ad = '")
-                ?.substringBefore("';")
+        val hash = doc.select("script").firstOrNull {
+            it.html().contains("var ad =")
+        }?.html()?.substringAfter("var ad = '")
+            ?.substringBefore("';")
+            
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
-            json.amap {
-                val url = getUrlByProvider(it.provider, it.code)
+            json.forEach { item ->
+                val url = getUrlByProvider(item.provider, item.code)
                 if (url.isNotEmpty()) {
-                    loadSourceNameExtractor(it.lang, url, mainUrl, subtitleCallback, callback)
+                    loadExtractor(url, mainUrl, subtitleCallback) { link ->
+                        callback.invoke(
+                            ExtractorLink(
+                                "${item.lang}[${link.source}]",
+                                "${item.lang}[${link.source}]",
+                                link.url,
+                                link.referer ?: mainUrl,
+                                link.quality,
+                                link.type,
+                                link.headers,
+                                link.extractorData
+                            )
+                        )
+                    }
                 }
             }
         }
@@ -297,30 +310,6 @@ class HDFull : MainAPI() {
         }
     }
 
-}
-
-suspend fun loadSourceNameExtractor(
-    source: String,
-    url: String,
-    referer: String? = null,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit,
-) {
-    loadExtractor(url, referer, subtitleCallback) { link ->
-        callback.invoke(
-            newExtractorLink(
-                "$source[${link.source}]",
-                "$source[${link.source}]",
-                link.url,
-            ) {
-                this.quality = link.quality
-                this.type = link.type
-                this.referer = link.referer
-                this.headers = link.headers
-                this.extractorData = link.extractorData
-            }
-        )
-    }
 }
 
 fun fixHostsLinks(url: String): String {
