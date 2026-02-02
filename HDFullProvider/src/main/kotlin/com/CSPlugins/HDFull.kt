@@ -192,6 +192,53 @@ class HDFull : MainAPI() {
         }
     }
 
+    // override suspend fun loadLinks(
+    //     data: String,
+    //     isCasting: Boolean,
+    //     subtitleCallback: (SubtitleFile) -> Unit,
+    //     callback: (ExtractorLink) -> Unit
+    // ): Boolean {
+    //     val doc = app.get(data, cookies = latestCookie).document
+        
+    //     val hash = doc.select("script").firstOrNull {
+    //         it.html().contains("var ad =")
+    //     }?.html()?.substringAfter("var ad = '")
+    //         ?.substringBefore("';")
+        
+    //     if (!hash.isNullOrEmpty()) {
+    //         val json = decodeHash(hash)
+            
+    //         json.amap { item ->
+    //             val url = getUrlByProvider(item.provider, item.code)
+                
+    //             if (url.isNotEmpty()) {
+    //                 try {
+    //                     loadExtractor(url, data, subtitleCallback) { link -> 
+    //                         CoroutineScope(Dispatchers.IO).launch {
+    //                             callback.invoke(
+    //                                 newExtractorLink(
+    //                                     name = "${item.lang}[${link.source}]",
+    //                                     source = "${item.lang}[${link.source}]",
+    //                                     url = link.url,
+    //                                 ) {
+    //                                     this.quality = link.quality
+    //                                     this.type = link.type
+    //                                     this.referer = link.referer
+    //                                     this.headers = link.headers
+    //                                     this.extractorData = link.extractorData
+    //                                 }
+    //                             )
+    //                         }
+    //                     }
+    //                 } catch (e: Exception) {
+    //                     Log.e("HDFull", "Error: ${e.message}")
+    //                 }
+    //             }
+    //         }
+    //     }
+    //     return true
+    // }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -214,28 +261,23 @@ class HDFull : MainAPI() {
                 if (url.isNotEmpty()) {
                     try {
                         loadExtractor(url, data, subtitleCallback) { link -> 
-                            callback.invoke(
-                                newExtractorLink(
-                                    name = "${item.lang}[${link.source}]",
-                                    source = "${item.lang}[${link.source}]",
-                                    url = link.url,
-                                ) {
-                                    this.quality = link.quality
-                                    this.type = link.type
-                                    this.referer = link.referer
-                                    this.headers = link.headers
-                                    this.extractorData = link.extractorData
-                                }
+                            // Modificar nombre para incluir idioma
+                            callback(
+                                link.copy(
+                                    name = "${item.lang}[${link.name}]",
+                                    source = "${item.lang}[${link.source}]"
+                                )
                             )
                         }
                     } catch (e: Exception) {
-                        Log.e("HDFull", "Error: ${e.message}")
+                        Log.e("HDFull", "Error loading $url: ${e.message}")
                     }
                 }
             }
         }
         return true
     }
+
 
     data class ProviderCode(
         val id: String,
