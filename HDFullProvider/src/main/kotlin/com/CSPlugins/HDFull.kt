@@ -262,7 +262,7 @@ class HDFull : MainAPI() {
                     try {
 
                         loadExtractor(url, data, subtitleCallback) { link -> 
-                            withContext(Dispatchers.IO) {
+                            CoroutineScope(Dispatchers.IO).launch {
                                 callback(
                                     newExtractorLink(
                                         name = "${item.lang}[${link.source}]",
