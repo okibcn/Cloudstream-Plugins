@@ -262,19 +262,21 @@ class HDFull : MainAPI() {
                     try {
 
                         loadExtractor(url, data, subtitleCallback) { link -> 
-                            callback(
-                                newExtractorLink(
-                                    name = "${item.lang}[${link.source}]",
-                                    source = "${item.lang}[${link.source}]",
-                                    url = link.url,
-                                ) {
-                                    this.quality = link.quality
-                                    this.type = link.type
-                                    this.referer = link.referer
-                                    this.headers = link.headers
-                                    this.extractorData = link.extractorData
-                                }
-                            )
+                            withContext(Dispatchers.IO) {
+                                callback(
+                                    newExtractorLink(
+                                        name = "${item.lang}[${link.source}]",
+                                        source = "${item.lang}[${link.source}]",
+                                        url = link.url,
+                                    ) {
+                                        this.quality = link.quality
+                                        this.type = link.type
+                                        this.referer = link.referer
+                                        this.headers = link.headers
+                                        this.extractorData = link.extractorData
+                                    }
+                                )
+                            }
                         }
 
                     } catch (e: Exception) {
