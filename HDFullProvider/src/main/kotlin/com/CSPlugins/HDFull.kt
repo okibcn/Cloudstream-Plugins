@@ -212,24 +212,21 @@ class HDFull : MainAPI() {
                 val url = getUrlByProvider(item.provider, item.code)
                 
                 if (url.isNotEmpty()) {
-                    loadExtractor(url, data, subtitleCallback,callback)
                     try {
                         loadExtractor(url, data, subtitleCallback) { link -> 
-                            CoroutineScope(Dispatchers.IO).launch {
-                                callback.invoke(
-                                    newExtractorLink(
-                                        name = "${item.lang}[${link.source}]",
-                                        source = "${item.lang}[${link.source}]",
-                                        url = link.url,
-                                    ) {
-                                        this.quality = link.quality
-                                        this.type = link.type
-                                        this.referer = link.referer
-                                        this.headers = link.headers
-                                        this.extractorData = link.extractorData
-                                    }
-                                )
-                            }
+                            callback.invoke(
+                                newExtractorLink(
+                                    name = "${item.lang}[${link.source}]",
+                                    source = "${item.lang}[${link.source}]",
+                                    url = link.url,
+                                ) {
+                                    this.quality = link.quality
+                                    this.type = link.type
+                                    this.referer = link.referer
+                                    this.headers = link.headers
+                                    this.extractorData = link.extractorData
+                                }
+                            )
                         }
                     } catch (e: Exception) {
                         Log.e("HDFull", "Error: ${e.message}")
