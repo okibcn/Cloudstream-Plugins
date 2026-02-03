@@ -192,52 +192,6 @@ class HDFull : MainAPI() {
         }
     }
 
-    // override suspend fun loadLinks(
-    //     data: String,
-    //     isCasting: Boolean,
-    //     subtitleCallback: (SubtitleFile) -> Unit,
-    //     callback: (ExtractorLink) -> Unit
-    // ): Boolean {
-    //     val doc = app.get(data, cookies = latestCookie).document
-        
-    //     val hash = doc.select("script").firstOrNull {
-    //         it.html().contains("var ad =")
-    //     }?.html()?.substringAfter("var ad = '")
-    //         ?.substringBefore("';")
-        
-    //     if (!hash.isNullOrEmpty()) {
-    //         val json = decodeHash(hash)
-            
-    //         json.amap { item ->
-    //             val url = getUrlByProvider(item.provider, item.code)
-                
-    //             if (url.isNotEmpty()) {
-    //                 try {
-    //                     loadExtractor(url, data, subtitleCallback) { link -> 
-    //                         CoroutineScope(Dispatchers.IO).launch {
-    //                             callback.invoke(
-    //                                 newExtractorLink(
-    //                                     name = "${item.lang}[${link.source}]",
-    //                                     source = "${item.lang}[${link.source}]",
-    //                                     url = link.url,
-    //                                 ) {
-    //                                     this.quality = link.quality
-    //                                     this.type = link.type
-    //                                     this.referer = link.referer
-    //                                     this.headers = link.headers
-    //                                     this.extractorData = link.extractorData
-    //                                 }
-    //                             )
-    //                         }
-    //                     }
-    //                 } catch (e: Exception) {
-    //                     Log.e("HDFull", "Error: ${e.message}")
-    //                 }
-    //             }
-    //         }
-    //     }
-    //     return true
-    // }
 
     override suspend fun loadLinks(
         data: String,
@@ -260,7 +214,6 @@ class HDFull : MainAPI() {
                 
                 if (url.isNotEmpty()) {
                     try {
-
                         loadExtractor(url, data, subtitleCallback) { link -> 
                             CoroutineScope(Dispatchers.IO).launch {
                                 callback(
@@ -278,7 +231,6 @@ class HDFull : MainAPI() {
                                 )
                             }
                         }
-
                     } catch (e: Exception) {
                         Log.e("HDFull", "Error loading $url: ${e.message}")
                     }

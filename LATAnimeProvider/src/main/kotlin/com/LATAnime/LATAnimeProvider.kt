@@ -106,8 +106,7 @@ class LATAnimeProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).documentLarge
-        // concurrent loadExtractor calls
-        document.select("#play-video a").amap { element ->
+        document.select("#play-video a").map { element ->
             val href = base64Decode(element.attr("data-player")).substringAfter("=")
             loadExtractor(
                 href,
