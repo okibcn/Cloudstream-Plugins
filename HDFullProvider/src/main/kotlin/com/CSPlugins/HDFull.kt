@@ -209,7 +209,7 @@ class HDFull : MainAPI() {
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
             
-            json.amap { item ->
+            json.map { item ->
                 val url = getUrlByProvider(item.provider, item.code)
                 
                 if (url.isNotEmpty()) {

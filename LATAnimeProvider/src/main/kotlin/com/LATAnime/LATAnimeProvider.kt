@@ -106,7 +106,7 @@ class LATAnimeProvider : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).documentLarge
-        document.select("#play-video a").map { element ->
+        document.select("#play-video a").amap { element ->
             val href = base64Decode(element.attr("data-player")).substringAfter("=")
             loadExtractor(
                 href,
@@ -118,24 +118,6 @@ class LATAnimeProvider : MainAPI() {
         return true
     }
 
-    // override suspend fun loadLinks(
-    //     data: String,
-    //     isCasting: Boolean,
-    //     subtitleCallback: (SubtitleFile) -> Unit,
-    //     callback: (ExtractorLink) -> Unit
-    // ): Boolean {
-    //     val document = app.get(data).documentLarge
-    //     document.select("#play-video a").map {
-    //         val href = base64Decode(it.attr("data-player")).substringAfter("=")
-    //         loadExtractor(
-    //             href,
-    //             "",
-    //             subtitleCallback,
-    //             callback
-    //         )
-    //     }
-    //     return true
-    // }
 
     private fun Element.getImageAttr(): String? {
         return this.attr("data-src")
