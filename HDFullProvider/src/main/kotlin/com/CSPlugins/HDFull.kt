@@ -209,7 +209,7 @@ class HDFull : MainAPI() {
         if (!hash.isNullOrEmpty()) {
             val json = decodeHash(hash)
             
-            json.amap { item ->
+            json.map { item ->       // Use .map for sequential scan, and .amap for concurrent scan, faster.
                 val url = getUrlByProvider(item.provider, item.code)
                 
                 if (url.isNotEmpty()) {
