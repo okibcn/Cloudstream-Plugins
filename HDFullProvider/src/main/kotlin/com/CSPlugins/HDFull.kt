@@ -56,14 +56,27 @@ class HDFull : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title     = this.selectFirst("h5 a")?.text() ?: "Desconocido"
+        var title     = this.selectFirst("h5 a")?.text() ?: "Desconocido"
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val type      = if (href.contains("/pelicula")) TvType.Movie else TvType.TvSeries
         val posterUrl = fixUrlNull(this.selectFirst("a img")?.attr("src"))
         val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
+        if (type == TvType.Movie) {
+            val langRegex = Regex("""images/(.*?)\.png""")
+            val langs = this.selectFirst("div.left")?.html()?.let { html ->
+                langRegex.findAll(html)
+                    .map { it.groupValues[1] }
+                    .joinToString("/")
+            } ?: ""
+            if (langs.isNotEmpty()) {
+                title = "$title [$langs]"
+            }
+        }
         return newAnimeSearchResponse(title, href, type) {
             this.posterUrl = posterUrl
-            if (type == TvType.Movie) addDubStatus(isDub)
+            if (type == TvType.Movie) {
+                addDubStatus(isDub)
+            }
         }
     }
 
@@ -115,11 +128,9 @@ class HDFull : MainAPI() {
         val doc = app.get(url, cookies = latestCookie).document
         val tvType = if (url.contains("pelicula")) TvType.Movie else TvType.TvSeries
         val title = doc.selectFirst("div#summary-title")?.text() ?: ""
-        val backimage =
-            doc.selectFirst("div#summary-fanart-wrapper")!!.attr("style").substringAfter("url(")
-                .substringBefore(")").trim()
-        val poster =
-            doc.selectFirst("div#summary-overview-wrapper div.show-poster img.video-page-thumbnail")!!
+        val backimage = doc.selectFirst("div#summary-fanart-wrapper")!!.attr("style")
+            .substringAfter("url(").substringBefore(")").trim()
+        val poster = doc.selectFirst("div#summary-overview-wrapper div.show-poster img.video-page-thumbnail")!!
                 .attr("src")
         val description =
             doc.selectFirst("div#summary-overview-wrapper div.show-overview div.show-overview-text")!!
@@ -212,7 +223,7 @@ class HDFull : MainAPI() {
             json.amap { item ->       // Use .map for sequential scan, and .amap for concurrent scan, faster.
                 val url = getUrlByProvider(item.provider, item.code)
                 
-                if (url.isNotEmpty()) {
+                 if (url.isNotEmpty()) {
                     try {
                         loadExtractor(url, data, subtitleCallback) { link -> 
                             CoroutineScope(Dispatchers.IO).launch {
