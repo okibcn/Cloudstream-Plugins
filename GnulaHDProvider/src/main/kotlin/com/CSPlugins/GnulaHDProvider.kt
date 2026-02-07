@@ -62,9 +62,9 @@ class GnulaHDProvider : MainAPI() {
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val type      = getType(this.selectFirst("div.typez")!!.text())
         val posterUrl = fixUrlNull(this.selectFirst("a div.limit > img")?.attr("src") ?: "")
-        var rawTitle  = this.selectFirst("a")!!.attr("title") ?: "Desconocido"
+        var rawTitle  = this.selectFirst("a")?.attr("title") ?: "Desconocido"
         val langs     = this.select("div.caratula-flags-badge img")
-            .mapNotNull { img -> img.attr("title")?.take(3) }
+            .mapNotNull { img -> img.attr("title").take(3) }
             .joinToString("/")
         val title = if (langs.isNotEmpty()) "$rawTitle [$langs]" else "$rawTitle"
 
@@ -87,7 +87,7 @@ class GnulaHDProvider : MainAPI() {
             val href     = fixUrl(it.selectFirst("a")!!.attr("href"))
             val image    = it.selectFirst("a div.limit > img")!!.attr("src")
             val langs    = it.select("div.caratula-flags-badge img")
-                .mapNotNull { img -> img.attr("title")?.take(3) }
+                .mapNotNull { img -> img.attr("title").take(3) }
                 .joinToString("/")
             val title = "($rawType $langs) $rawTitle"
             newMovieSearchResponse(title, href, getType(it.selectFirst("div.typez")!!.text())){
