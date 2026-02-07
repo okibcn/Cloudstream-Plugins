@@ -164,8 +164,9 @@ class GnulaHDProvider : MainAPI() {
     ): Boolean {
         Log.d("CS3debugGnulaHD", "=== loadLinks START ===")
         Log.d("CS3debugGnulaHD", "URL: $data")
-        
-        val doc = appGetChildMainUrl(data).document
+
+        val embedUrl = appGetChildMainUrl(data).document.selectFirst("div.player-embed > iframe")!!.attr("src")
+        val doc = appGetChildMainUrl(embedUrl).document
         Log.d("CS3debugGnulaHD", "Document loaded successfully")
         
         val script = doc.select("script")
