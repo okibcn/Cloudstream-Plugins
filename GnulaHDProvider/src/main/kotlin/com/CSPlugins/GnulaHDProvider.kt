@@ -70,14 +70,14 @@ class GnulaHDProvider : MainAPI() {
         }
     }
 
-    // private val cloudflareKiller = CloudflareKiller()
-    // suspend fun appGetChildMainUrl(url: String): NiceResponse {
-    //     // return app.get(url, interceptor = cloudflareKiller )
-    //     return app.get(url)
-    // }
+    private val cloudflareKiller = CloudflareKiller()
+    suspend fun appGetChildMainUrl(url: String): NiceResponse {
+        // return app.get(url, interceptor = cloudflareKiller )
+        return app.get(url)
+    }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        return appGetChildMainUrl("$mainUrl/?s=$query").document.select("div.postbody article.bs").map {
+        return app.get("$mainUrl/?s=$query").document.select("div.postbody article.bs").map {
             val rawTitle = it.selectFirst("a")!!.attr("title")
             val rawType  = it.selectFirst("div.typez")!!.text()
             val type     = getType(rawType)
@@ -94,7 +94,7 @@ class GnulaHDProvider : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse? {
-        val doc = appGetChildMainUrl(url).document
+        val doc = app.get(url).document
         val title = doc.selectFirst("div.postbody h1.entry-title")!!.text()
         val type = doc.select("span:has(b:matchesOwn(^Tipo:))").first()?.ownText()?.trim() ?: ""
         val poster = doc.selectFirst("div.postbody div.thumb img")!!.attr("src")
