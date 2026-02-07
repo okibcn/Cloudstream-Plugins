@@ -132,24 +132,85 @@ class GnulaHDProvider : MainAPI() {
         }
     }
 
+    // override suspend fun loadLinks(
+    //     data: String,
+    //     isCasting: Boolean,
+    //     subtitleCallback: (SubtitleFile) -> Unit,
+    //     callback: (ExtractorLink) -> Unit
+    // ): Boolean {
+    //     val embedUrl = appGetChildMainUrl(data).document.selectFirst("div.player-embed > iframe")!!.attr("src")
+    //     // Log.d("depurando", "loadLinks: embedUrl ${embedUrl.orEmpty()}")
+    //     // val html = appGetChildMainUrl(embedUrl).document.selectFirst("div.columns")?.html().orEmpty().replace("\n", " ")
+    //     // Log.d("depurando", "loadLinks: $html")
+    //     val regex = Regex("""\?id=([^"]+)""")
+    //     regex.findAll(appGetChildMainUrl(embedUrl).document.html().orEmpty())
+    //         .map { it.groupValues[1] }
+    //         .map { base64Decode(it) }
+    //         .forEach { decodedUrl ->
+    //             Log.d("GnulaHD", "loadLinks: urlDecoded=$decodedUrl")
+    //             loadExtractor(decodedUrl, mainUrl, subtitleCallback, callback)
+    //         }
+    //     return true
+    // }
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val embedUrl = appGetChildMainUrl(data).document.selectFirst("div.player-embed > iframe")!!.attr("src")
-        // Log.d("depurando", "loadLinks: embedUrl ${embedUrl.orEmpty()}")
-        // val html = appGetChildMainUrl(embedUrl).document.selectFirst("div.columns")?.html().orEmpty().replace("\n", " ")
-        // Log.d("depurando", "loadLinks: $html")
-        val regex = Regex("""\?id=([^"]+)""")
-        regex.findAll(appGetChildMainUrl(embedUrl).document.html().orEmpty())
-            .map { it.groupValues[1] }
-            .map { base64Decode(it) }
-            .forEach { decodedUrl ->
-                Log.d("GnulaHD", "loadLinks: urlDecoded=$decodedUrl")
-                loadExtractor(decodedUrl, mainUrl, subtitleCallback, callback)
+        val doc = appGetChildMainUrl(data).document
+        
+        val script = doc.select("script")
+            .firstOrNull { it.data().contains("var videos") }
+            ?.data() ?: return false
+        
+        // Map de variables a códigos de idioma
+        val languageMap = mapOf(
+            "videosOriginal" to "VO",
+            "videosLatino" to "Lat",
+            "videosCastellano" to "Cas",
+            "videosSubtitulado" to "Sub"
+        )
+        
+        languageMap.amap { (varName, langCode) ->
+            // Extraer el array de cada idioma
+            val regex = Regex("""var $varName = (\[.*?\]);""")
+            val arrayContent = regex.find(script)?.groupValues?.get(1)
+            
+            if (arrayContent != null) {
+                // Extraer URLs del array
+                val urlRegex = Regex("""\?id=([^"]+)""")
+                urlRegex.findAll(arrayContent).forEach { match ->
+                    val base64Id = match.groupValues[1]
+                    val decodedUrl = base64Decode(base64Id)
+                    
+                    try {
+                        loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
+                            CoroutineScope(Dispatchers.IO).launch {
+                                callback(
+                                    newExtractorLink(
+                                        name = "$langCode[${link.source}]",
+                                        source = "$langCode[${link.source}]",
+                                        url = link.url,
+                                    ) {
+                                        this.quality = link.quality
+                                        this.type = link.type
+                                        this.referer = link.referer
+                                        this.headers = link.headers
+                                        this.extractorData = link.extractorData
+                                    }
+                                )
+                            }
+                        }
+                    } catch (e: Exception) {
+                        Log.e("GnulaHD", "Error loading $decodedUrl: ${e.message}")
+                    }
+                }
             }
+        }
+        
         return true
     }
+
 }
