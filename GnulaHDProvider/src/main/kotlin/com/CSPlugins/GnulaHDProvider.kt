@@ -156,55 +156,62 @@ class GnulaHDProvider : MainAPI() {
     //     return true
     // }
 
-    override suspend fun loadLinks(
-        data: String,
-        isCasting: Boolean,
-        subtitleCallback: (SubtitleFile) -> Unit,
-        callback: (ExtractorLink) -> Unit
-    ): Boolean {
-        val embedUrl = appGetChildMainUrl(data).document
-            .selectFirst("div.player-embed > iframe")?.attr("src") ?: return false
-        
-        val script = appGetChildMainUrl(embedUrl).document
-            .select("script")
-            .firstOrNull { it.data().contains("var videosOriginal") }
-            ?.data() ?: return false
-        
-        mapOf(
-            "videosOriginal" to "VO",
-            "videosLatino" to "Lat",
-            "videosCastellano" to "Cas",
-            "videosSubtitulado" to "Sub"
-        ).amap { (varName, langCode) ->
-            Regex("""var $varName = (\[.*?\]);""")
-                .find(script)?.groupValues?.get(1)?.let { arrayContent ->
-                    Regex("""\?id=([^"]+)""")
-                        .findAll(arrayContent)
-                        .forEach { match ->
-                            val decodedUrl = base64Decode(match.groupValues[1])
-                            try {
-                                loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
-                                    CoroutineScope(Dispatchers.IO).launch {
-                                        callback(
-                                            newExtractorLink(
-                                                name = "$langCode [${link.source}]",
-                                                source = "$langCode [${link.source}]",
-                                                url = link.url,
-                                            ) {
-                                                this.quality = link.quality
-                                                this.type = link.type
-                                                this.referer = link.referer
-                                                this.headers = link.headers
-                                                this.extractorData = link.extractorData
-                                            }
-                                        )
-                                    }
-                                }
-                            } catch (_: Exception) {}
-                        }
-                }
-        }
-        return true
+override suspend fun loadLinks(
+    data: String,
+    isCasting: Boolean,
+    subtitleCallback: (SubtitleFile) -> Unit,
+    callback: (ExtractorLink) -> Unit
+): Boolean {
+    val embedUrl = appGetChildMainUrl(data).document
+        .selectFirst("div.player-embed > iframe")?.attr("src") ?: return false
+    
+    val script = appGetChildMainUrl(embedUrl).document
+        .select("script")
+        .firstOrNull { it.data().contains("var videosOriginal") }
+        ?.data() ?: return false
+    
+    // Construir lista de (URL, idioma)
+    val urlsWithLang = mapOf(
+        "videosOriginal" to "VO",
+        "videosLatino" to "Lat",
+        "videosCastellano" to "Cas",
+        "videosSubtitulado" to "Sub"
+    ).flatMap { (varName, langCode) ->
+        Regex("""var $varName = (\[.*?\]);""")
+            .find(script)?.groupValues?.get(1)?.let { arrayContent ->
+                Regex("""\?id=([^"]+)""")
+                    .findAll(arrayContent)
+                    .map { match -> 
+                        base64Decode(match.groupValues[1]) to langCode 
+                    }
+                    .toList()
+            } ?: emptyList()
     }
+    
+    // Procesar todas las URLs en paralelo
+    urlsWithLang.amap { (decodedUrl, langCode) ->
+        try {
+            loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
+                CoroutineScope(Dispatchers.IO).launch {
+                    callback(
+                        newExtractorLink(
+                            name = "$langCode [${link.source}]",
+                            source = "$langCode [${link.source}]",
+                            url = link.url,
+                        ) {
+                            this.quality = link.quality
+                            this.type = link.type
+                            this.referer = link.referer
+                            this.headers = link.headers
+                            this.extractorData = link.extractorData
+                        }
+                    )
+                }
+            }
+        } catch (_: Exception) {}
+    }
+    
+    return true
+}
 
 }
