@@ -56,12 +56,12 @@ class HDFull : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        var title     = this.selectFirst("h5 a")?.text() ?: "Desconocido"
         val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
         val type      = if (href.contains("/pelicula")) TvType.Movie else TvType.TvSeries
         val posterUrl = fixUrlNull(this.selectFirst("a img")?.attr("src"))
+        val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
+        var title     = this.selectFirst("h5 a")?.text() ?: "Desconocido"
         if (type == TvType.Movie) {
-            val isDub     = this.select("img[src*=/spa.], img[src*=/lat.]").isNotEmpty()
             val langRegex = Regex("""images/(.*?)\.png""")
             val langs = this.selectFirst("div.left")?.html()?.let { html ->
                 langRegex.findAll(html)
@@ -70,7 +70,6 @@ class HDFull : MainAPI() {
             } ?: ""
             if (langs.isNotEmpty()) {
                 title = "$title [$langs]"
-                
             }
         }
         return newAnimeSearchResponse(title, href, type) {

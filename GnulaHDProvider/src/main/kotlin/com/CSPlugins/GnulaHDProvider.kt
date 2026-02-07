@@ -12,7 +12,7 @@ import java.util.*
 
 class GnulaHDProvider : MainAPI() {
 
-    override var mainUrl = "https://ww3.GnulaHD.nu"
+    override var mainUrl = "https://ww3.gnulahd.nu"
     override var name = "GnulaHD"
     override var lang = "es"
     override val hasMainPage = true
@@ -48,14 +48,19 @@ class GnulaHDProvider : MainAPI() {
         )
 
         val items = ArrayList<HomePageList>()
-        val isHorizontal = true
 
         urls.amap { (url, name) ->
             val home = appGetChildMainUrl(url).document.select("div.postbody article.bs").map {
-                val title = it.selectFirst("a")!!.attr("title")
+                var title = it.selectFirst("a")!!.attr("title")
                 val imgElement = it.selectFirst("a div.limit > img")
                 val poster = imgElement?.attr("src") ?: ""
-
+                val langs = it.select("div.caratula-flags-badge img")
+                    .mapNotNull { img -> img.attr("title")?.take(3) }
+                    .joinToString("/")
+                if (langs.isNotEmpty()) {
+                    title = "$title [$langs]"
+                }
+                
                 newMovieSearchResponse(title, fixUrl(it.selectFirst("a")!!.attr("href"))) {
                     this.posterUrl = fixUrl(poster)
                     this.posterHeaders = if (poster.contains(mainUrl)) cloudflareKiller.getCookieHeaders(mainUrl).toMap() else emptyMap<String, String>()
