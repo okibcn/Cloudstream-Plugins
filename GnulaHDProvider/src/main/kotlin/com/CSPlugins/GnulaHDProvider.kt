@@ -19,7 +19,7 @@ import java.util.*
 class GnulaHDProvider : MainAPI() {
 
     override var mainUrl = "https://ww3.gnulahd.nu"
-    override var name = "GnulaHD"
+    override var name = "CS3debugGnulaHD"
     override var lang = "es"
     override val hasMainPage = true
     override val hasChromecastSupport = true
@@ -150,7 +150,7 @@ class GnulaHDProvider : MainAPI() {
     //         .map { it.groupValues[1] }
     //         .map { base64Decode(it) }
     //         .forEach { decodedUrl ->
-    //             Log.d("GnulaHD", "loadLinks: urlDecoded=$decodedUrl")
+    //             Log.d("CS3debugGnulaHD", "loadLinks: urlDecoded=$decodedUrl")
     //             loadExtractor(decodedUrl, mainUrl, subtitleCallback, callback)
     //         }
     //     return true
@@ -162,11 +162,24 @@ class GnulaHDProvider : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
+        Log.d("CS3debugGnulaHD", "=== loadLinks START ===")
+        Log.d("CS3debugGnulaHD", "URL: $data")
+        
         val doc = appGetChildMainUrl(data).document
+        Log.d("CS3debugGnulaHD", "Document loaded successfully")
         
         val script = doc.select("script")
-            .firstOrNull { it.data().contains("var videos") }
-            ?.data() ?: return false
+            .firstOrNull { it.data().contains("var videosOriginal") }
+            ?.data()
+        
+        if (script == null) {
+            Log.e("CS3debugGnulaHD", "Script with 'var videosOriginal' NOT FOUND")
+            Log.d("CS3debugGnulaHD", "Total scripts found: ${doc.select("script").size}")
+            return false
+        }
+        
+        Log.d("CS3debugGnulaHD", "Script found, length: ${script.length}")
+        Log.d("CS3debugGnulaHD", "Script preview: ${script.take(200)}")
         
         // Map de variables a códigos de idioma
         val languageMap = mapOf(
@@ -177,42 +190,61 @@ class GnulaHDProvider : MainAPI() {
         )
         
         languageMap.amap { (varName, langCode) ->
+            Log.d("CS3debugGnulaHD", "--- Processing language: $langCode ($varName) ---")
+            
             // Extraer el array de cada idioma
             val regex = Regex("""var $varName = (\[.*?\]);""")
             val arrayContent = regex.find(script)?.groupValues?.get(1)
             
-            if (arrayContent != null) {
-                // Extraer URLs del array
-                val urlRegex = Regex("""\?id=([^"]+)""")
-                urlRegex.findAll(arrayContent).forEach { match ->
-                    val base64Id = match.groupValues[1]
-                    val decodedUrl = base64Decode(base64Id)
-                    
-                    try {
-                        loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
-                            CoroutineScope(Dispatchers.IO).launch {
-                                callback(
-                                    newExtractorLink(
-                                        name = "$langCode[${link.source}]",
-                                        source = "$langCode[${link.source}]",
-                                        url = link.url,
-                                    ) {
-                                        this.quality = link.quality
-                                        this.type = link.type
-                                        this.referer = link.referer
-                                        this.headers = link.headers
-                                        this.extractorData = link.extractorData
-                                    }
-                                )
-                            }
+            if (arrayContent == null) {
+                Log.w("CS3debugGnulaHD", "Array not found for: $varName")
+                return@amap
+            }
+            
+            Log.d("CS3debugGnulaHD", "Array content for $langCode: ${arrayContent.take(100)}...")
+            
+            // Extraer URLs del array
+            val urlRegex = Regex("""\?id=([^"]+)""")
+            val matches = urlRegex.findAll(arrayContent).toList()
+            
+            Log.d("CS3debugGnulaHD", "Found ${matches.size} URLs for $langCode")
+            
+            matches.forEachIndexed { index, match ->
+                val base64Id = match.groupValues[1]
+                Log.d("CS3debugGnulaHD", "[$langCode #$index] Base64 ID: ${base64Id.take(20)}...")
+                
+                val decodedUrl = base64Decode(base64Id)
+                Log.d("CS3debugGnulaHD", "[$langCode #$index] Decoded URL: $decodedUrl")
+                
+                try {
+                    loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
+                        Log.d("CS3debugGnulaHD", "[$langCode] ✓ Link extracted: ${link.source}")
+                        
+                        CoroutineScope(Dispatchers.IO).launch {
+                            callback(
+                                newExtractorLink(
+                                    name = "$langCode[${link.source}]",
+                                    source = "$langCode[${link.source}]",
+                                    url = link.url,
+                                ) {
+                                    this.quality = link.quality
+                                    this.type = link.type
+                                    this.referer = link.referer
+                                    this.headers = link.headers
+                                    this.extractorData = link.extractorData
+                                }
+                            )
                         }
-                    } catch (e: Exception) {
-                        Log.e("GnulaHD", "Error loading $decodedUrl: ${e.message}")
                     }
+                    Log.d("CS3debugGnulaHD", "[$langCode #$index] loadExtractor completed")
+                } catch (e: Exception) {
+                    Log.e("CS3debugGnulaHD", "[$langCode #$index] ✗ Error: ${e.message}")
+                    e.printStackTrace()
                 }
             }
         }
         
+        Log.d("CS3debugGnulaHD", "=== loadLinks END ===")
         return true
     }
 
