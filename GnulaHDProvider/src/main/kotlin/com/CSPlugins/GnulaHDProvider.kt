@@ -33,52 +33,57 @@ class GnulaHDProvider : MainAPI() {
         }
     }
 
-
-    private val cloudflareKiller = CloudflareKiller()
-    suspend fun appGetChildMainUrl(url: String): NiceResponse {
-        // return app.get(url, interceptor = cloudflareKiller )
-        return app.get(url)
-    }
+    override val mainPage = mainPageOf(
+        "ver/?type=Pelicula&order=latest" to "Pelis",
+        "ver/?status=&type=Serie&order=latest" to "Series",
+        "ver/?status=&type=Anime&order=latest" to "Anime",
+    )
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val urls = listOf(
-            Pair("$mainUrl/ver/?type=Pelicula&order=latest", "Novedades Peliculas"),
-            Pair("$mainUrl/ver/?status=&type=Serie&order=latest", "Novedades Series"),
-            Pair("$mainUrl/ver/?status=&type=Anime&order=latest", "Novedades Anime"),
+        val document = app.get("$mainUrl/${request.data}&page=$page").documentLarge
+        val home     = document.select("div.postbody article.bs").mapNotNull { it.toSearchResult() }
+        return newHomePageResponse(
+            list    = HomePageList(
+                name               = request.name,
+                list               = home,
+                isHorizontalImages = false
+            ),
+            hasNext = true
         )
-
-        val items = ArrayList<HomePageList>()
-
-        urls.amap { (url, name) ->
-            val home = appGetChildMainUrl(url).document.select("div.postbody article.bs").map {
-                var title = it.selectFirst("a")!!.attr("title")
-                val imgElement = it.selectFirst("a div.limit > img")
-                val poster = imgElement?.attr("src") ?: ""
-                val langs = it.select("div.caratula-flags-badge img")
-                    .mapNotNull { img -> img.attr("title")?.take(3) }
-                    .joinToString("/")
-                if (langs.isNotEmpty()) {
-                    title = "$title [$langs]"
-                }
-                
-                newMovieSearchResponse(title, fixUrl(it.selectFirst("a")!!.attr("href"))) {
-                    this.posterUrl = fixUrl(poster)
-                    this.posterHeaders = if (poster.contains(mainUrl)) cloudflareKiller.getCookieHeaders(mainUrl).toMap() else emptyMap<String, String>()
-                }
-            }
-
-            items.add(HomePageList(name, home))
-        }
-
-        if (items.size <= 0) throw ErrorLoadingException()
-        return newHomePageResponse(items)
     }
+
+    private fun Element.toSearchResult(): SearchResponse? {
+        val href      = fixUrlNull(this.selectFirst("a")?.attr("href")) ?: return null
+        val type      = getType(this.selectFirst("div.typez")!!.text())
+        val posterUrl = fixUrlNull(this.selectFirst("a div.limit > img")?.attr("src") ?: "")
+        var rawTitle  = this.selectFirst("a")!!.attr("title") ?: "Desconocido"
+        val langs     = this.select("div.caratula-flags-badge img")
+            .mapNotNull { img -> img.attr("title")?.take(3) }
+            .joinToString("/")
+        val title = if (langs.isNotEmpty()) "$rawTitle [$langs]" else "$rawTitle"
+
+        return newAnimeSearchResponse(title, href, type) {
+            this.posterUrl = posterUrl
+        }
+    }
+
+    // private val cloudflareKiller = CloudflareKiller()
+    // suspend fun appGetChildMainUrl(url: String): NiceResponse {
+    //     // return app.get(url, interceptor = cloudflareKiller )
+    //     return app.get(url)
+    // }
 
     override suspend fun search(query: String): List<SearchResponse> {
         return appGetChildMainUrl("$mainUrl/?s=$query").document.select("div.postbody article.bs").map {
-            val title = it.selectFirst("a")!!.attr("title")+" ("+ it.selectFirst("div.typez")!!.text() +")"
-            val href = fixUrl(it.selectFirst("a")!!.attr("href"))
-            val image = it.selectFirst("a div.limit > img")!!.attr("src")
+            val rawTitle = it.selectFirst("a")!!.attr("title")
+            val rawType  = it.selectFirst("div.typez")!!.text()
+            val type     = getType(rawType)
+            val href     = fixUrl(it.selectFirst("a")!!.attr("href"))
+            val image    = it.selectFirst("a div.limit > img")!!.attr("src")
+            val langs    = it.select("div.caratula-flags-badge img")
+                .mapNotNull { img -> img.attr("title")?.take(3) }
+                .joinToString("/")
+            val title = "($rawType $langs) $rawTitle"
             newMovieSearchResponse(title, href, getType(it.selectFirst("div.typez")!!.text())){
                 this.posterUrl = fixUrl(image)
             }
