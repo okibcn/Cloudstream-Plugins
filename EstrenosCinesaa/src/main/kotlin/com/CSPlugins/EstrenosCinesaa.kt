@@ -83,43 +83,37 @@ class EstrenosCinesaa : MainAPI() {
         val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
         val type        = if document.selectfirst("div.single_tabs a").text().contains("Episodios") 
             TvType.TvSeries else TvType.Movie
-
+        val epsAnchor   = document.select("div.seasons li")
 
         return when (tvType) {
             TvType.TvSeries -> {
-
-            }
-            TvType.Movie -> {
-
-            }
-            else -> null
-        }    
-
-        val epsAnchor   = document.select("div.episodiotitle]")
-
-        return if (type == TvType.Movie) {
-            val episodes: List<Episode>? = epsAnchor.map {
-                val epPoster = it.select("img").attr("data-src")
-                val epHref   = it.attr("href")
-
-                newEpisode(epHref) {
-                    this.posterUrl = epPoster
+                val episodes: List<Episode>? = epsAnchor.map {
+                    val epPoster = it.selectFirst("img").attr("src")
+                    val epHref   = it..selectFirst("a").attr("href")
+                    newEpisode(epHref) {
+                        this.posterUrl = epPoster
+                    }
+                }
+                newAnimeLoadResponse(title, url, TvType.TvSeries) {
+                    addEpisodes(DubStatus = null, episodes)
+                    this.posterUrl = poster
+                    this.plot = description
+                    // this.tags = tags
+                    this.year = year
                 }
             }
-
-            newAnimeLoadResponse(title, url, TvType.TvShow) {
-                addEpisodes(DubStatus.Subbed, episodes)
-                this.posterUrl = poster
-                this.plot = description
-                this.tags = tags
-                this.year = year
+            TvType.Movie -> {
+                newMovieLoadResponse(title, url, tvType, url) {
+                    this.posterUrl = poster
+                    this.backgroundPosterUrl = backimage
+                    this.plot = description
+                    // this.tags = tags
+                    this.year = year
+                    // this.posterHeaders = mapOf("Referer" to "$mainUrl/")
+                }
             }
-        } else newMovieLoadResponse(title, url, TvType.Movie, epsAnchor.attr("href")) {
-            this.posterUrl = poster
-            this.plot = description
-            this.tags = tags
-            this.year = year
-        }
+            else -> null
+        }    4
     }
 
     override suspend fun loadLinks(
