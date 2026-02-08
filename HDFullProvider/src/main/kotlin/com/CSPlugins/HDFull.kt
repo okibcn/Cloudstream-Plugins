@@ -148,7 +148,7 @@ class HDFull : MainAPI() {
             doc.select("div#non-mashable div.main-wrapper div.container-wrap div div.container div.span-24 div.flickr")
                 .flatMap { seasonDiv ->
                     val seasonNumber = seasonDiv.selectFirst("a img")?.attr("original-title")
-                        ?.substringAfter("Temporada")?.trim()?.toIntOrNull()
+                        ?.substringAfter("Temporada")?.trim()?.toIntOrNull() ?: 1
                     val result = app.post(
                         "$mainUrl/a/episodes", cookies = latestCookie, data = mapOf(
                             "action" to "season",
