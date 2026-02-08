@@ -135,27 +135,6 @@ class GnulaHDProvider : MainAPI() {
         }
     }
 
-    // override suspend fun loadLinks(
-    //     data: String,
-    //     isCasting: Boolean,
-    //     subtitleCallback: (SubtitleFile) -> Unit,
-    //     callback: (ExtractorLink) -> Unit
-    // ): Boolean {
-    //     val embedUrl = appGetChildMainUrl(data).document.selectFirst("div.player-embed > iframe")!!.attr("src")
-    //     // Log.d("depurando", "loadLinks: embedUrl ${embedUrl.orEmpty()}")
-    //     // val html = appGetChildMainUrl(embedUrl).document.selectFirst("div.columns")?.html().orEmpty().replace("\n", " ")
-    //     // Log.d("depurando", "loadLinks: $html")
-    //     val regex = Regex("""\?id=([^"]+)""")
-    //     regex.findAll(appGetChildMainUrl(embedUrl).document.html().orEmpty())
-    //         .map { it.groupValues[1] }
-    //         .map { base64Decode(it) }
-    //         .forEach { decodedUrl ->
-    //             Log.d("CS3debugGnulaHD", "loadLinks: urlDecoded=$decodedUrl")
-    //             loadExtractor(decodedUrl, mainUrl, subtitleCallback, callback)
-    //         }
-    //     return true
-    // }
-
 override suspend fun loadLinks(
     data: String,
     isCasting: Boolean,

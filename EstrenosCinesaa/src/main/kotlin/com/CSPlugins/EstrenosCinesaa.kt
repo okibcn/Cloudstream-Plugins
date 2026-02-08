@@ -92,14 +92,14 @@ class EstrenosCinesaa : MainAPI() {
                 }
             }
 
-            newAnimeLoadResponse(title, url, TvType.Anime) {
+            newAnimeLoadResponse(title, url, TvType.TvShow) {
                 addEpisodes(DubStatus.Subbed, episodes)
                 this.posterUrl = poster
                 this.plot = description
                 this.tags = tags
                 this.year = year
             }
-        } else newMovieLoadResponse(title, url, TvType.AnimeMovie, epsAnchor.attr("href")) {
+        } else newMovieLoadResponse(title, url, TvType.Movie, epsAnchor.attr("href")) {
             this.posterUrl = poster
             this.plot = description
             this.tags = tags
