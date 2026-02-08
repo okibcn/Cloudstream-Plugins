@@ -78,11 +78,26 @@ class EstrenosCinesaa : MainAPI() {
         val document    = app.get(url).documentLarge
         val title       = document.selectFirst("h1")?.text() ?: "Desconocido"
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
+        val backimage   = cacheImg("div.g-item a")!!.attr("href")
         val description = document.selectFirst("div.wp-content")?.text()
         val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
-        val epsAnchor   = document.select("div.row a[href*='/ver/']")
+        val type        = if document.selectfirst("div.single_tabs a").text().contains("Episodios") 
+            TvType.TvSeries else TvType.Movie
 
-        return if (epsAnchor.size > 1) {
+
+        return when (tvType) {
+            TvType.TvSeries -> {
+
+            }
+            TvType.Movie -> {
+
+            }
+            else -> null
+        }    
+
+        val epsAnchor   = document.select("div.episodiotitle]")
+
+        return if (type == TvType.Movie) {
             val episodes: List<Episode>? = epsAnchor.map {
                 val epPoster = it.select("img").attr("data-src")
                 val epHref   = it.attr("href")
@@ -107,7 +122,6 @@ class EstrenosCinesaa : MainAPI() {
         }
     }
 
-
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -115,14 +129,11 @@ class EstrenosCinesaa : MainAPI() {
         callback: (ExtractorLink) -> Unit
     ): Boolean {
         val document = app.get(data).documentLarge
-        document.select("#play-video a").map {
-            val href = base64Decode(it.attr("data-player")).substringAfter("=")
-            loadExtractor(
-                href,
-                "",
-                subtitleCallback,
-                callback
-            )
+        links        = doc.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
+            .mapNotNull { it.attr("src") }
+        // Procesar todas las URLs en paralelo
+        links.amap { oneLink ->
+            loadExtractor(oneLink, mainUrl, subtitleCallback)
         }
         return true
     }

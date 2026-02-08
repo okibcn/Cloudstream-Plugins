@@ -109,14 +109,10 @@ class GnulaHDProvider : MainAPI() {
         val genres = doc.select("div.postbody div.genxed a").map { it.text() }
         val status = null
 
-        // Log.d("depurando", "load: $title")
         val episodes = doc.select("div.postbody div.eplister a").map {
                 val name = it.selectFirst("div.epl-title")!!.text()
                 val link = it.attr("href")
                 val epThumb = null 
-                // Log.d("depurando", "load: link $link")
-                // val html = appGetChildMainUrl(link).document.selectFirst("div.player-embed > iframe")!!.attr("src").orEmpty()
-                // Log.d("depurando", "load: subdoc $html")
                 newEpisode(link){
                     this.name = name
                 }
