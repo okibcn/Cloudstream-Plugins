@@ -96,97 +96,106 @@ class GnulaHDProvider : MainAPI() {
         }
     }
 
-    override suspend fun load(url: String): LoadResponse? {
-        val doc = app.get(url).document
-        val title = doc.selectFirst("div.postbody h1.entry-title")!!.text()
-        val type = doc.select("span:has(b:matchesOwn(^Tipo:))").first()?.ownText()?.trim() ?: ""
-        val poster = doc.selectFirst("div.postbody div.thumb img")!!.attr("src")
-        val backimage = doc.selectFirst("div.postbody div.thumb img")!!.attr("src")
-        val premiereYear: Int? = doc.select("span.split:has(b:matchesOwn(^Estreno:))").first()?.ownText()?.trim()?.takeLast(4)?.toIntOrNull()
-        val description = doc.select("div.mindesc h3:first-of-type, div.mindesc p")
-            .takeWhile { it.text() != "¿Para quién es?" } // stop when hitting the second h3
-            .joinToString("\n") { it.text() }
-        val genres = doc.select("div.postbody div.genxed a").map { it.text() }
-        val status = null
+override suspend fun load(url: String): LoadResponse? {
+    val doc = app.get(url).document
+    val title = doc.selectFirst("div.postbody h1.entry-title")!!.text()
+    val type = doc.select("span:has(b:matchesOwn(^Tipo:))").first()?.ownText()?.trim() ?: ""
+    val poster = doc.selectFirst("div.postbody div.thumb img")!!.attr("src")
+    val backimage = doc.selectFirst("div.postbody div.thumb img")!!.attr("src")
+    val premiereYear: Int? = doc.select("span.split:has(b:matchesOwn(^Estreno:))").first()?.ownText()?.trim()?.takeLast(4)?.toIntOrNull()
+    val description = doc.select("div.mindesc h3:first-of-type, div.mindesc p")
+        .takeWhile { it.text() != "¿Para quién es?" }
+        .joinToString("\n") { it.text() }
+    val genres = doc.select("div.postbody div.genxed a").map { it.text() }
+    val status = null
 
-        val episodes = doc.select("div.postbody div.eplister a").map {
-                val name = it.selectFirst("div.epl-title")!!.text()
-                val link = it.attr("href")
-                val epThumb = null 
-                newEpisode(link){
-                    this.name = name
-                }
+    val episodes = doc.select("div.postbody div.eplister a").mapNotNull {
+        val name = it.selectFirst("div.epl-title")?.text() ?: return@mapNotNull null
+        val link = it.attr("href")
+        
+        // Extraer temporada y episodio del formato "2x06"
+        val epNum = it.selectFirst("div.epl-num")?.text()?.trim()
+        val (season, episode) = epNum?.let { numText ->
+            Regex("""(\d+)x(\d+)""").find(numText)?.let { match ->
+                match.groupValues[1].toIntOrNull() to match.groupValues[2].toIntOrNull()
             }
-            .sortedBy { it.name }
-
-        return newAnimeLoadResponse(title, url, getType(type)) {
-            posterUrl = poster
-            backgroundPosterUrl = backimage
-            addEpisodes(DubStatus.Dubbed, episodes)
-            showStatus = status
-            plot = description
-            tags = genres
-            year = premiereYear
-            posterHeaders = if (poster.contains(mainUrl)) cloudflareKiller.getCookieHeaders(mainUrl).toMap() else emptyMap<String, String>()
+        } ?: (null to null)
+        
+        newEpisode(link) {
+            this.name = name
+            this.season = season
+            this.episode = episode
         }
     }
 
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    val embedUrl = appGetChildMainUrl(data).document
-        .selectFirst("div.player-embed > iframe")?.attr("src") ?: return false
-    
-    val script = appGetChildMainUrl(embedUrl).document
-        .select("script")
-        .firstOrNull { it.data().contains("var videosOriginal") }
-        ?.data() ?: return false
-    
-    // Construir lista de (URL, idioma)
-    val urlsWithLang = mapOf(
-        "videosOriginal" to "VO",
-        "videosLatino" to "Lat",
-        "videosCastellano" to "Cas",
-        "videosSubtitulado" to "Sub"
-    ).flatMap { (varName, langCode) ->
-        Regex("""var $varName = (\[.*?\]);""")
-            .find(script)?.groupValues?.get(1)?.let { arrayContent ->
-                Regex("""\?id=([^"]+)""")
-                    .findAll(arrayContent)
-                    .map { match -> 
-                        base64Decode(match.groupValues[1]) to langCode 
-                    }
-                    .toList()
-            } ?: emptyList()
+    return newAnimeLoadResponse(title, url, getType(type)) {
+        posterUrl = poster
+        backgroundPosterUrl = backimage
+        addEpisodes(DubStatus.Dubbed, episodes)
+        showStatus = status
+        plot = description
+        tags = genres
+        year = premiereYear
+        posterHeaders = if (poster.contains(mainUrl)) cloudflareKiller.getCookieHeaders(mainUrl).toMap() else emptyMap<String, String>()
     }
-    
-    // Procesar todas las URLs en paralelo
-    urlsWithLang.amap { (decodedUrl, langCode) ->
-        try {
-            loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
-                CoroutineScope(Dispatchers.IO).launch {
-                    callback(
-                        newExtractorLink(
-                            name = "$langCode [${link.source}]",
-                            source = "$langCode [${link.source}]",
-                            url = link.url,
-                        ) {
-                            this.quality = link.quality
-                            this.type = link.type
-                            this.referer = link.referer
-                            this.headers = link.headers
-                            this.extractorData = link.extractorData
-                        }
-                    )
-                }
-            }
-        } catch (_: Exception) {}
-    }
-    
-    return true
 }
+
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        val embedUrl = appGetChildMainUrl(data).document
+            .selectFirst("div.player-embed > iframe")?.attr("src") ?: return false
+        
+        val script = appGetChildMainUrl(embedUrl).document
+            .select("script")
+            .firstOrNull { it.data().contains("var videosOriginal") }
+            ?.data() ?: return false
+        
+        // Construir lista de (URL, idioma)
+        val urlsWithLang = mapOf(
+            "videosOriginal" to "VO",
+            "videosLatino" to "Lat",
+            "videosCastellano" to "Cas",
+            "videosSubtitulado" to "Sub"
+        ).flatMap { (varName, langCode) ->
+            Regex("""var $varName = (\[.*?\]);""")
+                .find(script)?.groupValues?.get(1)?.let { arrayContent ->
+                    Regex("""\?id=([^"]+)""")
+                        .findAll(arrayContent)
+                        .map { match -> 
+                            base64Decode(match.groupValues[1]) to langCode 
+                        }
+                        .toList()
+                } ?: emptyList()
+        }
+        
+        // Procesar todas las URLs en paralelo
+        urlsWithLang.amap { (decodedUrl, langCode) ->
+            try {
+                loadExtractor(decodedUrl, mainUrl, subtitleCallback) { link ->
+                    CoroutineScope(Dispatchers.IO).launch {
+                        callback(
+                            newExtractorLink(
+                                name = "$langCode [${link.source}]",
+                                source = "$langCode [${link.source}]",
+                                url = link.url,
+                            ) {
+                                this.quality = link.quality
+                                this.type = link.type
+                                this.referer = link.referer
+                                this.headers = link.headers
+                                this.extractorData = link.extractorData
+                            }
+                        )
+                    }
+                }
+            } catch (_: Exception) {}
+        }
+        
+        return true
+    }
 
 }
