@@ -81,7 +81,7 @@ class EstrenosCinesaa : MainAPI() {
         val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")!!.attr("href")))
         val description = document.selectFirst("div.wp-content")?.text()
         val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
-        val type        = if (document.selectFirst("div.single_tabs a")?.text().contains("Episodios"))
+        val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios"))
             TvType.TvSeries else TvType.Movie
         val epsAnchor   = document.select("div.seasons li")
 
@@ -95,7 +95,7 @@ class EstrenosCinesaa : MainAPI() {
                     }
                 }
                 newAnimeLoadResponse(title, url, TvType.TvSeries) {
-                    addEpisodes(status = null, episodes = episodes)
+                    addEpisodes(status = DubStatus.None , episodes = episodes)
                     this.posterUrl = poster
                     this.plot = description
                     // this.tags = tags
@@ -113,7 +113,7 @@ class EstrenosCinesaa : MainAPI() {
                 }
             }
             else -> null
-        }    4
+        }
     }
 
     override suspend fun loadLinks(
