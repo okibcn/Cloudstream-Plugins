@@ -78,18 +78,18 @@ class EstrenosCinesaa : MainAPI() {
         val document    = app.get(url).documentLarge
         val title       = document.selectFirst("h1")?.text() ?: "Desconocido"
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
-        val backimage   = cacheImg("div.g-item a")!!.attr("href")
+        val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")!!.attr("href")))
         val description = document.selectFirst("div.wp-content")?.text()
         val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
-        val type        = if document.selectfirst("div.single_tabs a").text().contains("Episodios") 
+        val type        = if (document.selectFirst("div.single_tabs a").text().contains("Episodios"))
             TvType.TvSeries else TvType.Movie
         val epsAnchor   = document.select("div.seasons li")
 
-        return when (tvType) {
+        return when (type) {
             TvType.TvSeries -> {
                 val episodes: List<Episode>? = epsAnchor.map {
-                    val epPoster = it.selectFirst("img").attr("src")
-                    val epHref   = it..selectFirst("a").attr("href")
+                    val epPoster = cacheImg(fixUrl(it.selectFirst("img").attr("src")))
+                    val epHref   = it.selectFirst("a").attr("href")
                     newEpisode(epHref) {
                         this.posterUrl = epPoster
                     }
