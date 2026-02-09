@@ -24,8 +24,16 @@ class EstrenosCinesaa : MainAPI() {
         "tvshows" to "Series",
         "genre/marvel" to "Marvel",
         "genre/starwars" to "Star Wars",
-        "genre/netflix" to "Netfix",
+        "genre/netflix" to "Netflix",
     )
+
+    companion object {
+        fun getType(t: String): TvType = when {
+            t.uppercase().contains("TV")  -> TvType.TvSeries
+            else                          -> TvType.Movie
+        }
+        fun cacheImg(t: String): String = "https://wsrv.nl/?url=${t}"
+    }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
         val document = app.get("$mainUrl/${request.data}/page/$page").documentLarge
@@ -40,14 +48,6 @@ class EstrenosCinesaa : MainAPI() {
             ),
             hasNext = true
         )
-    }
-
-    companion object {
-        fun getType(t: String): TvType = when {
-            t.uppercase().contains("TV")  -> TvType.TvSeries
-            else                          -> TvType.Movie
-        }
-        fun cacheImg(t: String): String = "https://wsrv.nl/?url=${t}"
     }
 
     private fun Element.toSearchResult(): SearchResponse {
@@ -82,7 +82,6 @@ class EstrenosCinesaa : MainAPI() {
             ?.split(" ")?.lastOrNull()?.toIntOrNull()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
-        Log.d("CS3debugEstrenosCinesaa", "Year: $year}")
 
         return when (type) {
             TvType.TvSeries -> {
@@ -147,12 +146,5 @@ class EstrenosCinesaa : MainAPI() {
         }
         
         return true
-    }
-
-
-    private fun Element.getImageAttr(): String? {
-        return this.attr("data-src")
-            .takeIf { it.isNotBlank() && it.startsWith("http") }
-            ?: this.attr("src").takeIf { it.isNotBlank() && it.startsWith("http") }
     }
 }
