@@ -87,7 +87,7 @@ class EstrenosCinesaa : MainAPI() {
         return when (type) {
             TvType.TvSeries -> {
                 val episodes = epsAnchor.mapNotNull {
-                    val epPoster = cacheImg(fixUrl(it.selectFirst("img")?.attr("src")))
+                    val epPoster = cacheImg(fixUrl(it.selectFirst("img")?.attr("src") ?: "" ))
                     val epHref   = it.selectFirst("a")?.attr("href") ?: return@mapNotNull null
                     newEpisode(epHref) {
                         this.posterUrl = epPoster
