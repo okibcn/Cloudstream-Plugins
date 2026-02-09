@@ -170,8 +170,8 @@ class RepelisHd : MainAPI() {
                         CoroutineScope(Dispatchers.IO).launch {
                             callback(
                                 newExtractorLink(
-                                    name = "${lang.capitalize()} [${link.source}]",
-                                    source = "${lang.capitalize()} [${link.source}]",
+                                    name = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
+                                    source = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
                                     url = link.url,
                                 ) {
                                     this.quality = link.quality
