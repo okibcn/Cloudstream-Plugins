@@ -33,7 +33,7 @@ class EstrenosCinesaa : MainAPI() {
         Log.d("EstrenosCinesaa", "${request.name} | $mainUrl/${request.data}/page/$page")
         val home     = document.select("#archive-content article, div.items > article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
-            list    = HomePageList(
+            list     = HomePageList(
                 name               = request.name,
                 list               = home,
                 isHorizontalImages = false
@@ -55,7 +55,6 @@ class EstrenosCinesaa : MainAPI() {
         val href      = this.selectFirst("a")!!.attr("href")
         val posterUrl = cacheImg(fixUrl(this.selectFirst("img")!!.attr("src")))
         val myType    = getType(this.attr("class"))
-        Log.d("EstrenosCinesaa", "$title | $href | ${this.attr("class")}")
         return newAnimeSearchResponse(title, href, myType) {
             this.posterUrl = posterUrl
         }
@@ -83,7 +82,7 @@ class EstrenosCinesaa : MainAPI() {
             ?.split(" ")?.lastOrNull()?.toIntOrNull()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
-        Log.d("EstrenosCinesaa", "Year: $year}")
+        Log.d("CS3debugEstrenosCinesaa", "Year: $year}")
 
         return when (type) {
             TvType.TvSeries -> {
