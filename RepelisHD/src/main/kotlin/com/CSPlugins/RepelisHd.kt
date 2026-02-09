@@ -113,7 +113,7 @@ class RepelisHd : MainAPI() {
                     Log.d("CS3debug", "load() - Episodio $epNum: ${mirrors.size} mirrors encontrados")
                     
                     // Construir data: "SERIES|url1|url2|url3" (usar | como separador más seguro)
-                    val dataUrl = "TV |" + mirrors.joinToString(" ")
+                    val dataUrl = " TV |" + mirrors.joinToString(" ")
                     
                     Log.d("CS3debug", "load() - Data para $epNum: ${dataUrl.take(100)}")
                     
