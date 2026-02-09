@@ -37,7 +37,7 @@ class RepelisHd : MainAPI() {
     }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
-        val document = app.get("$mainUrl/${request.data.replace("P_A_G_E",$page)}").documentLarge
+        val document = app.get("$mainUrl/${request.data.replace("P_A_G_E","$page")}").documentLarge
         val home     = document.select("div.items article").mapNotNull { it.toSearchResult() }
         return newHomePageResponse(
             list = HomePageList(
