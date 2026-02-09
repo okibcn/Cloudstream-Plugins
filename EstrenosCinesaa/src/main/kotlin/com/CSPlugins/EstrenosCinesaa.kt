@@ -80,39 +80,33 @@ class EstrenosCinesaa : MainAPI() {
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
         val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")!!.attr("href")))
         val description = document.selectFirst("div.wp-content")?.text()
-        // val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
-        val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios"))
+        val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
         val epsAnchor   = document.select("div.seasons li")
 
         return when (type) {
             TvType.TvSeries -> {
-                val episodes: List<Episode>? = epsAnchor.map {
+                val episodes = epsAnchor.mapNotNull {
                     val epPoster = cacheImg(fixUrl(it.selectFirst("img")?.attr("src")))
-                    val epHref   = it.selectFirst("a")?.attr("href")
+                    val epHref   = it.selectFirst("a")?.attr("href") ?: return@mapNotNull null
                     newEpisode(epHref) {
                         this.posterUrl = epPoster
                     }
                 }
                 newAnimeLoadResponse(title, url, TvType.TvSeries) {
-                    addEpisodes(status = DubStatus.None , episodes = episodes)
+                    addEpisodes(DubStatus.None, episodes)
                     this.posterUrl = poster
                     this.plot = description
-                    // this.tags = tags
-                    // this.year = year
-                } ?: null
+                }
             }
             TvType.Movie -> {
                 newMovieLoadResponse(title, url, TvType.Movie, url) {
                     this.posterUrl = poster
                     this.backgroundPosterUrl = backimage
                     this.plot = description
-                    // this.tags = tags
-                    // this.year = year
-                    // this.posterHeaders = mapOf("Referer" to "$mainUrl/")
                 }
             }
-            else -> null
+            else -> throw ErrorLoadingException("Tipo desconocido")
         }
     }
 
