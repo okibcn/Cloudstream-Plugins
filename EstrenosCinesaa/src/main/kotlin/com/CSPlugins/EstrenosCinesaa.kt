@@ -4,8 +4,9 @@ import com.lagradost.cloudstream3.*
 import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
-import android.util.Log
 import java.util.*
+
+import android.util.Log
 
 class EstrenosCinesaa : MainAPI() {
     override var mainUrl              = "https://www.estrenoscinesaa.com"
@@ -78,24 +79,35 @@ class EstrenosCinesaa : MainAPI() {
         val document    = app.get(url).documentLarge
         val title       = document.selectFirst("h1")?.text() ?: "Desconocido"
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
-        val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")!!.attr("href")))
+        val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")?.attr("href") ?: ""))
         val description = document.selectFirst("div.wp-content")?.text()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
-        val epsAnchor   = document.select("div.seasons li")
 
         return when (type) {
             TvType.TvSeries -> {
-                val episodes = epsAnchor.mapNotNull {
-                    val epPoster = cacheImg(fixUrl(it.selectFirst("img")?.attr("src") ?: "" ))
-                    val epHref   = it.selectFirst("a")?.attr("href") ?: return@mapNotNull null
-                    newEpisode(epHref) {
+                // Extraer episodios de ul.episodios li
+                val episodes = document.select("ul.episodios li").mapNotNull { li ->
+                    val epLink = li.selectFirst("a")?.attr("href") ?: return@mapNotNull null
+                    val epPoster = li.selectFirst("img")?.attr("src")?.let { cacheImg(fixUrl(it)) }
+                    val epName = li.selectFirst("a")?.text()?.trim()
+                    val numerando = li.selectFirst("div.numerando")?.text()?.trim() // "1 - 3"
+                    
+                    // Extraer temporada y episodio del numerando
+                    val (season, episode) = numerando?.split("-")?.map { it.trim().toIntOrNull() }
+                        ?.let { it.getOrNull(0) to it.getOrNull(1) } ?: (null to null)
+                    
+                    newEpisode(epLink) {
+                        this.name = epName
+                        this.season = season
+                        this.episode = episode
                         this.posterUrl = epPoster
                     }
                 }
-                newAnimeLoadResponse(title, url, TvType.TvSeries) {
-                    addEpisodes(DubStatus.None, episodes)
+                
+                newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                     this.posterUrl = poster
+                    this.backgroundPosterUrl = backimage
                     this.plot = description
                 }
             }
@@ -110,21 +122,31 @@ class EstrenosCinesaa : MainAPI() {
         }
     }
 
+
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        // val doc   = app.get(data).documentLarge
-        // val links = doc.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
-        //     .mapNotNull { it.attr("src") ?: "" }
-        // // Procesar todas las URLs en paralelo
-        // links.amap { oneLink ->
-        //     loadExtractor(oneLink, mainUrl, subtitleCallback)
-        // }
+        val document = app.get(data).document
+        
+        // Extraer iframes excluyendo el trailer
+        val iframeSources = document.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
+            .mapNotNull { it.attr("src").takeIf { url -> url.isNotBlank() } }
+        
+        // Procesar todos los iframes en paralelo
+        iframeSources.amap { iframeUrl ->
+            try {
+                loadExtractor(iframeUrl, data, subtitleCallback, callback)
+            } catch (e: Exception) {
+                // Ignorar errores de extractores individuales
+            }
+        }
+        
         return true
     }
+
 
     private fun Element.getImageAttr(): String? {
         return this.attr("data-src")
