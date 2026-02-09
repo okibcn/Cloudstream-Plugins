@@ -81,6 +81,8 @@ class EstrenosCinesaa : MainAPI() {
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
         val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")?.attr("href") ?: ""))
         val description = document.selectFirst("div.wp-content")?.text()
+        val year = document.selectFirst("div.sheader div.data span.date")?.text()
+            ?.split(" ")?.lastOrNull()?.toIntOrNull()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
 
@@ -109,6 +111,7 @@ class EstrenosCinesaa : MainAPI() {
                     this.posterUrl = poster
                     this.backgroundPosterUrl = backimage
                     this.plot = description
+                    this.year = year
                 }
             }
             TvType.Movie -> {
@@ -116,9 +119,10 @@ class EstrenosCinesaa : MainAPI() {
                     this.posterUrl = poster
                     this.backgroundPosterUrl = backimage
                     this.plot = description
+                    this.year = year
                 }
             }
-            else -> throw ErrorLoadingException("Tipo desconocido")
+            else -> throw ErrorLoadingException("Unknown TvType")
         }
     }
 
