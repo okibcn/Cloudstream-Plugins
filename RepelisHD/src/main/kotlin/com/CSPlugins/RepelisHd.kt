@@ -22,10 +22,10 @@ class RepelisHd : MainAPI() {
     override val mainPage = mainPageOf(
         "cine/page/P_A_G_E/" to "Estrenos de Cine",
         "series/page/P_A_G_E/" to "Series Actualizadas",
-        "https://repelishd.city/pelicula/page/P_A_G_E/?language=Castellano" to "Pelis Castellano",
-        "https://repelishd.city/pelicula/page/P_A_G_E/?language=Latino" to "Pelis Latino",
-        "https://repelishd.city/series/page/P_A_G_E/?language=Castellano" to "Series Castellano",
-        "https://repelishd.city/series/page/P_A_G_E/?language=Latino" to "Series Latino",
+        "pelicula/page/P_A_G_E/?language=Castellano" to "Pelis Castellano",
+        "pelicula/page/P_A_G_E/?language=Latino" to "Pelis Latino",
+        "series/page/P_A_G_E/?language=Castellano" to "Series Castellano",
+        "series/page/P_A_G_E/?language=Latino" to "Series Latino",
     )
 
     companion object {
