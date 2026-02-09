@@ -73,8 +73,6 @@ class RepelisHd : MainAPI() {
         val poster = document.selectFirst("div.sheader div.poster img")?.attr("src")
             ?.let { cacheImg(fixUrl(it)) }
         val description = document.selectFirst("div.wp-content, p.texto")?.text()?.trim()
-        
-        // Extraer año del primer span en div.extra
         val year = document.selectFirst("div.extra span")?.text()?.trim()?.toIntOrNull()
         
         // Detectar tipo: si tiene temporadas, es serie
@@ -88,7 +86,6 @@ class RepelisHd : MainAPI() {
                     val seasonNum = seasonId.replace("season-", "").toIntOrNull()
                     
                     seasonDiv.select("ul li").mapNotNull { li ->
-                        val mainLink = li.selectFirst("a[data-num]") ?: return@mapNotNull null
                         val epNum = mainLink.attr("data-num") // "1x1", "2x5"
                         val epTitle = mainLink.attr("data-title")
                         
@@ -101,10 +98,8 @@ class RepelisHd : MainAPI() {
                         val mirrors = li.select("div.mirrors a[data-link]").mapNotNull { mirror ->
                             mirror.attr("data-link").takeIf { it.isNotBlank() }
                         }
-                        
-                        // Usar el primer mirror como data (o el data-link del main)
-                        val dataUrl = mirrors.firstOrNull() ?: mainLink.attr("data-link")
-                        
+                        // Construir data: "TV url1 url2 url3"
+                        val dataUrl = "TV " + mirrors.joinToString(" ")
                         newEpisode(dataUrl) {
                             this.name = epTitle
                             this.season = season
@@ -120,7 +115,10 @@ class RepelisHd : MainAPI() {
                 }
             }
             TvType.Movie -> {
-                newMovieLoadResponse(title, url, TvType.Movie, url) {
+                // Extraer iframe src como data para la película
+                val iframeSrc = document.selectFirst("iframe")?.attr("src") ?: url
+                
+                newMovieLoadResponse(title, url, TvType.Movie, iframeSrc) {
                     this.posterUrl = poster
                     this.plot = description
                     this.year = year
@@ -131,28 +129,50 @@ class RepelisHd : MainAPI() {
     }
 
 
-
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).document
-        
-        // Extraer iframes excluyendo el trailer
-        val iframeSources = document.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
-            .mapNotNull { it.attr("src").takeIf { url -> url.isNotBlank() } }
-        
-        // Procesar todos los iframes en paralelo
-        iframeSources.amap { iframeUrl ->
-            try {
-                loadExtractor(iframeUrl, data, subtitleCallback, callback)
-            } catch (e: Exception) {
-                // Ignorar errores de extractores individuales
+        if (data.startsWith("TV ")) {
+            // Series: "TV url1 url2 url3"
+            val urls = data.removePrefix("TV ").split(" ").filter { it.isNotBlank() }
+            urls.amap { url ->
+                try {
+                    loadExtractor(url, mainUrl, subtitleCallback, callback)
+                } catch (_: Exception) {}
+            }
+        } else {
+            // Películas: iframe URL
+            val document = app.get(data).document
+            
+            // Extraer todos los mirrors de todos los idiomas
+            val allMirrors = document.select("ul._player-mirrors li[data-link]").mapNotNull { li ->
+                val link = li.attr("data-link").let {
+                    if (it.startsWith("//")) "https:$it" else it
+                }
+                val language = li.parent()?.className()?.split(" ")?.firstOrNull { 
+                    it in listOf("latino", "castellano", "subtitulado") 
+                } ?: "unknown"
+                
+                link to language
+            }
+            
+            // Procesar todos los enlaces en paralelo
+            allMirrors.amap { (url, lang) ->
+                try {
+                    loadExtractor(url, data, subtitleCallback) { link ->
+                        callback(
+                            link.copy(
+                                name = "${lang.capitalize()} - ${link.name}"
+                            )
+                        )
+                    }
+                } catch (_: Exception) {}
             }
         }
-        
         return true
     }
+
 }
