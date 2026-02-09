@@ -113,11 +113,7 @@ class RepelisHd : MainAPI() {
                     Log.d("CS3debug", "load() - Episodio $epNum: ${mirrors.size} mirrors encontrados")
                     
                     // Construir data: "SERIES|url1|url2|url3" (usar | como separador más seguro)
-                    val dataUrl = if (mirrors.isNotEmpty()) {
-                        "SERIES|" + mirrors.joinToString("|")
-                    } else {
-                        "SERIES|" + mainLink.attr("data-link")
-                    }
+                    val dataUrl = "TV|" + mirrors.joinToString(" ")
                     
                     Log.d("CS3debug", "load() - Data para $epNum: ${dataUrl.take(100)}")
                     
@@ -160,9 +156,9 @@ override suspend fun loadLinks(
 ): Boolean {
     Log.d("CS3debug", "loadLinks() - Data recibida: ${data.take(150)}")
     
-    if (data.startsWith("SERIES|")) {
+    if (data.contains("TV|")) {
         // Series: "SERIES|url1|url2|url3"
-        val urls = data.removePrefix("SERIES|").split("|").filter { it.isNotBlank() }
+        val urls = data.substringAfter("TV|").split(" ").filter { it.isNotBlank() }
         Log.d("CS3debug", "loadLinks() - Serie detectada, ${urls.size} URLs a procesar")
         
         urls.forEachIndexed { index, url ->
