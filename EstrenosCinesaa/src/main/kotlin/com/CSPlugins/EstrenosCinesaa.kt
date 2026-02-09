@@ -62,13 +62,11 @@ class EstrenosCinesaa : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        Log.d("EstrenosCinesaa", "SEARCH | $query")
         return app.get("${mainUrl}/?s=$query").documentLarge.select("div.result-item").mapNotNull { 
             val title = it.selectFirst("div.title")!!.text()+" ("+ it.selectFirst("span.year")!!.text() +")"
             val href = fixUrl(it.selectFirst("a")!!.attr("href"))
             val myType = getType(it.selectFirst("div.image a span")!!.text())
             val image = it.selectFirst("img")!!.attr("src")
-            Log.d("EstrenosCinesaa", "$title | $href | ${it.selectFirst("div.image a span")!!.text()}")
             newMovieSearchResponse(title, href, myType){
                 this.posterUrl = cacheImg(fixUrl(image))
             }            
@@ -81,10 +79,11 @@ class EstrenosCinesaa : MainAPI() {
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
         val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")?.attr("href") ?: ""))
         val description = document.selectFirst("div.wp-content")?.text()
-        val year = document.selectFirst("div.sheader div.data span.date")?.text()
+        val year        = document.selectFirst("div.sheader div.data span.date")?.text()
             ?.split(" ")?.lastOrNull()?.toIntOrNull()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
             TvType.TvSeries else TvType.Movie
+        Log.d("EstrenosCinesaa", "Year: $year}")
 
         return when (type) {
             TvType.TvSeries -> {
