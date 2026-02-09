@@ -26,8 +26,8 @@ class RepelisHd : MainAPI() {
     override val mainPage = mainPageOf(
         "cine/page/P_A_G_E/" to "Estrenos de Cine",
         "series/page/P_A_G_E/" to "Series Actualizadas",
-        "pelicula/page/P_A_G_E/?language=Castellano" to "Pelis Castellano",
-        "pelicula/page/P_A_G_E/?language=Latino" to "Pelis Latino",
+        "cine/page/P_A_G_E/?language=Castellano" to "Pelis Castellano",
+        "cine/page/P_A_G_E/?language=Latino" to "Pelis Latino",
         "series/page/P_A_G_E/?language=Castellano" to "Series Castellano",
         "series/page/P_A_G_E/?language=Latino" to "Series Latino",
     )

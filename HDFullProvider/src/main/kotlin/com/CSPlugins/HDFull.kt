@@ -156,7 +156,6 @@ class HDFull : MainAPI() {
                             "limit" to "0",
                             "show" to sid,
                             "season" to "$seasonNumber",
-
                             )
                     )
                     val episodesJson = AppUtils.parseJson<List<EpisodeJson>>(result.document.text())
