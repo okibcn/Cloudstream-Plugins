@@ -86,6 +86,7 @@ class RepelisHd : MainAPI() {
                     val seasonNum = seasonId.replace("season-", "").toIntOrNull()
                     
                     seasonDiv.select("ul li").mapNotNull { li ->
+                        val mainLink = li.selectFirst("a[data-num]") ?: return@mapNotNull null
                         val epNum = mainLink.attr("data-num") // "1x1", "2x5"
                         val epTitle = mainLink.attr("data-title")
                         
