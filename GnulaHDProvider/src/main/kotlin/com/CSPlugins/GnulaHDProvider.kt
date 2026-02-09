@@ -113,7 +113,7 @@ override suspend fun load(url: String): LoadResponse? {
         val name = it.selectFirst("div.epl-title")?.text() ?: return@mapNotNull null
         val link = it.attr("href")
         // Extraer temporada y episodio del formato "2x06"
-        val epNum = it.selectFirst("div.epl-num")?.text()?.trim()
+        val epNum = it.selectFirst("div.epl-num")?.text()?.trim() ?: ""
         val parts = epNum.split("x")
         val season = parts.getOrNull(0)?.toIntOrNull()
         val episode = parts.getOrNull(1)?.toIntOrNull()
