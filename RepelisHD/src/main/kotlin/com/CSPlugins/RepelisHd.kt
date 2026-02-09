@@ -71,7 +71,7 @@ class RepelisHd : MainAPI() {
         return document.select("div.items article").mapNotNull { it.toSearchResult() }
     }
 
-override suspend fun load(url: String): LoadResponse {
+ override suspend fun load(url: String): LoadResponse {
     Log.d("CS3debug", "load() - URL recibida: $url")
     val document = app.get(url).document
     val title = document.selectFirst("div.sheader div.data h1")?.text()?.trim() ?: "Desconocido"
@@ -112,11 +112,11 @@ override suspend fun load(url: String): LoadResponse {
                     
                     Log.d("CS3debug", "load() - Episodio $epNum: ${mirrors.size} mirrors encontrados")
                     
-                    // Construir data: "TV url1 url2 url3"
+                    // Construir data: "SERIES|url1|url2|url3" (usar | como separador más seguro)
                     val dataUrl = if (mirrors.isNotEmpty()) {
-                        "TV " + mirrors.joinToString(" ")
+                        "SERIES|" + mirrors.joinToString("|")
                     } else {
-                        mainLink.attr("data-link")
+                        "SERIES|" + mainLink.attr("data-link")
                     }
                     
                     Log.d("CS3debug", "load() - Data para $epNum: ${dataUrl.take(100)}")
@@ -160,9 +160,9 @@ override suspend fun loadLinks(
 ): Boolean {
     Log.d("CS3debug", "loadLinks() - Data recibida: ${data.take(150)}")
     
-    if (data.startsWith("TV ")) {
-        // Series: "TV url1 url2 url3"
-        val urls = data.removePrefix("TV ").split(" ").filter { it.isNotBlank() }
+    if (data.startsWith("SERIES|")) {
+        // Series: "SERIES|url1|url2|url3"
+        val urls = data.removePrefix("SERIES|").split("|").filter { it.isNotBlank() }
         Log.d("CS3debug", "loadLinks() - Serie detectada, ${urls.size} URLs a procesar")
         
         urls.forEachIndexed { index, url ->
@@ -226,4 +226,5 @@ override suspend fun loadLinks(
     Log.d("CS3debug", "loadLinks() - Finalizando")
     return true
 }
+
 }
