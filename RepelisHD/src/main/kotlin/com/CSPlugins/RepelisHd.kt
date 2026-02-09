@@ -71,156 +71,118 @@ class RepelisHd : MainAPI() {
         return document.select("div.items article").mapNotNull { it.toSearchResult() }
     }
 
- override suspend fun load(url: String): LoadResponse {
-    Log.d("CS3debug", "load() - URL recibida: $url")
-    val document = app.get(url).document
-    val title = document.selectFirst("div.sheader div.data h1")?.text()?.trim() ?: "Desconocido"
-    Log.d("CS3debug", "load() - Título: $title")
-    
-    val poster = document.selectFirst("div.sheader div.poster img")?.attr("src")
-        ?.let { cacheImg(fixUrl(it)) }
-    val description = document.selectFirst("div.wp-content, p.texto")?.text()?.trim()
-    val year = document.selectFirst("div.extra span")?.text()?.trim()?.toIntOrNull()
-    
-    // Detectar tipo: si tiene temporadas, es serie
-    val seasonDivs = document.select("div[id^='season-']")
-    Log.d("CS3debug", "load() - Temporadas encontradas: ${seasonDivs.size}")
-    val type = if (seasonDivs.isNotEmpty()) TvType.TvSeries else TvType.Movie
-    Log.d("CS3debug", "load() - Tipo detectado: $type")
-    
-    return when (type) {
-        TvType.TvSeries -> {
-            val episodes = seasonDivs.flatMap { seasonDiv ->
-                val seasonId = seasonDiv.attr("id")
-                val seasonNum = seasonId.replace("season-", "").toIntOrNull()
-                Log.d("CS3debug", "load() - Procesando $seasonId (Season $seasonNum)")
+    override suspend fun load(url: String): LoadResponse {
+        val document = app.get(url).document
+        val title = document.selectFirst("div.sheader div.data h1")?.text()?.trim() ?: "Desconocido"
+        val poster = document.selectFirst("div.sheader div.poster img")?.attr("src")
+            ?.let { cacheImg(fixUrl(it)) }
+        val description = document.selectFirst("div.wp-content, p.texto")?.text()?.trim()
+        val year = document.selectFirst("div.extra span")?.text()?.trim()?.toIntOrNull()
+        
+        // Detectar tipo: si tiene temporadas, es serie
+        val seasonDivs = document.select("div[id^='season-']")
+        val type = if (seasonDivs.isNotEmpty()) TvType.TvSeries else TvType.Movie
+        
+        return when (type) {
+            TvType.TvSeries -> {
+                val episodes = seasonDivs.flatMap { seasonDiv ->
+                    val seasonId = seasonDiv.attr("id")
+                    val seasonNum = seasonId.replace("season-", "").toIntOrNull()
+                    
+                    seasonDiv.select("ul li").mapNotNull { li ->
+                        val mainLink = li.selectFirst("a[data-num]") ?: return@mapNotNull null
+                        val epNum = mainLink.attr("data-num")
+                        val epTitle = mainLink.attr("data-title")
+                        // Extraer temporada y episodio de "1x1"
+                        val parts = epNum.split("x")
+                        val season = parts.getOrNull(0)?.toIntOrNull()
+                        val episode = parts.getOrNull(1)?.toIntOrNull()
+                        // Recolectar todos los mirrors
+                        val mirrors = li.select("div.mirrors a[data-link]").mapNotNull { mirror ->
+                            mirror.attr("data-link").takeIf { it.isNotBlank() }
+                        }
+                        // Construir data con marcador único
+                        val dataUrl = " TV |" + mirrors.joinToString(" ")
+                        
+                        newEpisode(dataUrl) {
+                            this.name = epTitle
+                            this.season = season
+                            this.episode = episode
+                        }
+                    }
+                }
                 
-                seasonDiv.select("ul li").mapNotNull { li ->
-                    val mainLink = li.selectFirst("a[data-num]") ?: return@mapNotNull null
-                    val epNum = mainLink.attr("data-num") // "1x1", "2x5"
-                    val epTitle = mainLink.attr("data-title")
-                    
-                    // Extraer temporada y episodio de "1x1"
-                    val (season, episode) = Regex("""(\d+)x(\d+)""").find(epNum)?.let {
-                        it.groupValues[1].toIntOrNull() to it.groupValues[2].toIntOrNull()
-                    } ?: (seasonNum to null)
-                    
-                    // Recolectar todos los mirrors (enlaces alternativos)
-                    val mirrors = li.select("div.mirrors a[data-link]").mapNotNull { mirror ->
-                        mirror.attr("data-link").takeIf { it.isNotBlank() }
-                    }
-                    
-                    Log.d("CS3debug", "load() - Episodio $epNum: ${mirrors.size} mirrors encontrados")
-                    
-                    // Construir data: "SERIES|url1|url2|url3" (usar | como separador más seguro)
-                    val dataUrl = " TV |" + mirrors.joinToString(" ")
-                    
-                    Log.d("CS3debug", "load() - Data para $epNum: ${dataUrl.take(100)}")
-                    
-                    newEpisode(dataUrl) {
-                        this.name = epTitle
-                        this.season = season
-                        this.episode = episode
-                    }
+                newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
+                    this.posterUrl = poster
+                    this.plot = description
+                    this.year = year
                 }
             }
-            
-            Log.d("CS3debug", "load() - Total episodios creados: ${episodes.size}")
-            
-            newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
-                this.posterUrl = poster
-                this.plot = description
-                this.year = year
-            }
-        }
-        TvType.Movie -> {
-            // Extraer iframe src como data para la película
-            val iframeSrc = document.selectFirst("iframe")?.attr("src") ?: url
-            Log.d("CS3debug", "load() - Movie iframe: $iframeSrc")
-            
-            newMovieLoadResponse(title, url, TvType.Movie, iframeSrc) {
-                this.posterUrl = poster
-                this.plot = description
-                this.year = year
-            }
-        }
-        else -> throw ErrorLoadingException("Tipo desconocido")
-    }
-}
-
-override suspend fun loadLinks(
-    data: String,
-    isCasting: Boolean,
-    subtitleCallback: (SubtitleFile) -> Unit,
-    callback: (ExtractorLink) -> Unit
-): Boolean {
-    Log.d("CS3debug", "loadLinks() - Data recibida: ${data}")
-    
-    if (data.contains("TV |")) {
-        // Series: "mainurl/TV |url1 url2 url3"
-        val urls = data.substringAfter("TV |").split(" ").filter { it.isNotBlank() }
-        Log.d("CS3debug", "loadLinks() - Serie detectada, ${urls.size} URLs a procesar")
-        
-        urls.forEachIndexed { index, url ->
-            Log.d("CS3debug", "loadLinks() - URL[$index]: $url")
-        }
-        
-        urls.amap { url ->
-            try {
-                Log.d("CS3debug", "loadLinks() - Procesando extractor para: $url")
-                loadExtractor(url, mainUrl, subtitleCallback, callback)
-            } catch (e: Exception) {
-                Log.e("CS3debug", "loadLinks() - Error con $url: ${e.message}")
-            }
-        }
-    } else {
-        // Películas: iframe URL
-        Log.d("CS3debug", "loadLinks() - Película detectada, cargando iframe")
-        val document = app.get(data).document
-        
-        // Extraer todos los mirrors de todos los idiomas
-        val allMirrors = document.select("ul._player-mirrors li[data-link]").mapNotNull { li ->
-            val link = li.attr("data-link").let {
-                if (it.startsWith("//")) "https:$it" else it
-            }
-            val language = li.parent()?.className()?.split(" ")?.firstOrNull { 
-                it in listOf("latino", "castellano", "subtitulado") 
-            } ?: "unknown"
-            
-            link to language
-        }
-        
-        Log.d("CS3debug", "loadLinks() - Película: ${allMirrors.size} mirrors encontrados")
-        
-        // Procesar todos los enlaces en paralelo
-        allMirrors.amap { (url, lang) ->
-            try {
-                Log.d("CS3debug", "loadLinks() - Procesando [$lang]: $url")
-                loadExtractor(url, data, subtitleCallback) { link ->
-                    CoroutineScope(Dispatchers.IO).launch {
-                        callback(
-                            newExtractorLink(
-                                name = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
-                                source = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
-                                url = link.url,
-                            ) {
-                                this.quality = link.quality
-                                this.type = link.type
-                                this.referer = link.referer
-                                this.headers = link.headers
-                                this.extractorData = link.extractorData
-                            }
-                        )
-                    }
+            TvType.Movie -> {
+                val iframeSrc = document.selectFirst("iframe")?.attr("src") ?: url
+                
+                newMovieLoadResponse(title, url, TvType.Movie, iframeSrc) {
+                    this.posterUrl = poster
+                    this.plot = description
+                    this.year = year
                 }
-            } catch (e: Exception) {
-                Log.e("CS3debug", "loadLinks() - Error con [$lang] $url: ${e.message}")
             }
+            else -> throw ErrorLoadingException("Tipo desconocido")
         }
     }
-    
-    Log.d("CS3debug", "loadLinks() - Finalizando")
-    return true
-}
 
+    override suspend fun loadLinks(
+        data: String,
+        isCasting: Boolean,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ): Boolean {
+        if (data.contains("TV |")) {
+            // Series: procesar múltiples mirrors
+            val urls = data.substringAfter("TV |").split(" ").filter { it.isNotBlank() }
+            
+            urls.amap { url ->
+                try {
+                    loadExtractor(url, mainUrl, subtitleCallback, callback)
+                } catch (_: Exception) {}
+            }
+        } else {
+            // Películas: extraer mirrors del iframe
+            val document = app.get(data).document
+            
+            val allMirrors = document.select("ul._player-mirrors li[data-link]").mapNotNull { li ->
+                val link = li.attr("data-link").let {
+                    if (it.startsWith("//")) "https:$it" else it
+                }
+                val language = li.parent()?.className()?.split(" ")?.firstOrNull { 
+                    it in listOf("latino", "castellano", "subtitulado") 
+                } ?: "unknown"
+                
+                link to language
+            }
+            
+            allMirrors.amap { (url, lang) ->
+                try {
+                    loadExtractor(url, data, subtitleCallback) { link ->
+                        CoroutineScope(Dispatchers.IO).launch {
+                            callback(
+                                newExtractorLink(
+                                    name = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
+                                    source = "${lang.replaceFirstChar { it.uppercase() }} [${link.source}]",
+                                    url = link.url,
+                                ) {
+                                    this.quality = link.quality
+                                    this.type = link.type
+                                    this.referer = link.referer
+                                    this.headers = link.headers
+                                    this.extractorData = link.extractorData
+                                }
+                            )
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+        }
+        return true
+    }
 }
