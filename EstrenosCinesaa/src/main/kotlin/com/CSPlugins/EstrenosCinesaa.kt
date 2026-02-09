@@ -80,7 +80,7 @@ class EstrenosCinesaa : MainAPI() {
         val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
         val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")!!.attr("href")))
         val description = document.selectFirst("div.wp-content")?.text()
-        val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
+        // val year        = document.select("span.date").text().takeLast(4).toIntOrNull()
         val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios"))
             TvType.TvSeries else TvType.Movie
         val epsAnchor   = document.select("div.seasons li")
@@ -99,7 +99,7 @@ class EstrenosCinesaa : MainAPI() {
                     this.posterUrl = poster
                     this.plot = description
                     // this.tags = tags
-                    this.year = year
+                    // this.year = year
                 } ?: null
             }
             TvType.Movie -> {
@@ -108,7 +108,7 @@ class EstrenosCinesaa : MainAPI() {
                     this.backgroundPosterUrl = backimage
                     this.plot = description
                     // this.tags = tags
-                    this.year = year
+                    // this.year = year
                     // this.posterHeaders = mapOf("Referer" to "$mainUrl/")
                 }
             }
