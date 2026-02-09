@@ -5,6 +5,9 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.loadExtractor
 import org.jsoup.nodes.Element
 import java.util.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 import android.util.Log
 
@@ -129,7 +132,6 @@ class RepelisHd : MainAPI() {
         }
     }
 
-
     override suspend fun loadLinks(
         data: String,
         isCasting: Boolean,
@@ -164,16 +166,25 @@ class RepelisHd : MainAPI() {
             allMirrors.amap { (url, lang) ->
                 try {
                     loadExtractor(url, data, subtitleCallback) { link ->
-                        callback(
-                            link.copy(
-                                name = "${lang.capitalize()} - ${link.name}"
+                        CoroutineScope(Dispatchers.IO).launch {
+                            callback(
+                                newExtractorLink(
+                                    name = "${lang.capitalize()} [${link.source}]",
+                                    source = "${lang.capitalize()} [${link.source}]",
+                                    url = link.url,
+                                ) {
+                                    this.quality = link.quality
+                                    this.type = link.type
+                                    this.referer = link.referer
+                                    this.headers = link.headers
+                                    this.extractorData = link.extractorData
+                                }
                             )
-                        )
+                        }
                     }
                 } catch (_: Exception) {}
             }
         }
         return true
     }
-
 }
