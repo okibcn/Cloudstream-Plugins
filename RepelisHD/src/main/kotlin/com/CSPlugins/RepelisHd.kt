@@ -52,7 +52,7 @@ class RepelisHd : MainAPI() {
     private fun Element.toSearchResult(): SearchResponse? {
         val title = this.selectFirst("div.data h3 a")?.text() ?: return null
         val href = this.selectFirst("a")?.attr("href") ?: return null
-        val posterUrl = fixUrlNull(this.selectFirst("div.poster img")?.attr("src"))
+        val posterUrl = cacheImg(fixUrlNull(this.selectFirst("div.poster img")?.attr("src")))
         val year = this.selectFirst("div.data span")?.text()?.toIntOrNull()
         val type = getType(this.attr("class"))
         
@@ -63,7 +63,7 @@ class RepelisHd : MainAPI() {
     }
 
     override suspend fun search(query: String): List<SearchResponse> {
-        val document = app.get("$mainUrl/?s=$query").document
+        val document = app.get("$mainUrl/?do=search&subaction=search&story=$query").document
         return document.select("div.items article").mapNotNull { it.toSearchResult() }
     }
 
