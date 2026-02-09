@@ -95,7 +95,7 @@ class EstrenosCinesaa : MainAPI() {
                     }
                 }
                 newAnimeLoadResponse(title, url, TvType.TvSeries) {
-                    addEpisodes(DubStatus = null, episodes)
+                    addEpisodes(status = null, episodes = episodes)
                     this.posterUrl = poster
                     this.plot = description
                     // this.tags = tags
