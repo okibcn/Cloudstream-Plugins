@@ -103,7 +103,7 @@ class EstrenosCinesaa : MainAPI() {
                 }
             }
             TvType.Movie -> {
-                newMovieLoadResponse(title, url, tvType, url) {
+                newMovieLoadResponse(title, url, TvType.Movie, url) {
                     this.posterUrl = poster
                     this.backgroundPosterUrl = backimage
                     this.plot = description
