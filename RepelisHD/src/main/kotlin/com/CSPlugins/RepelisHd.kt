@@ -68,40 +68,53 @@ class RepelisHd : MainAPI() {
     }
 
     override suspend fun load(url: String): LoadResponse {
-        val document    = app.get(url).documentLarge
-        val title       = document.selectFirst("h1")?.text() ?: "Desconocido"
-        val poster      = cacheImg(fixUrl(document.selectFirst("div.sheader img")!!.attr("src")))
-        val backimage   = cacheImg(fixUrl(document.selectFirst("div.g-item a")?.attr("href") ?: ""))
-        val description = document.selectFirst("div.wp-content")?.text()
-        val year        = document.selectFirst("div.sheader div.data span.date")?.text()
-            ?.split(" ")?.lastOrNull()?.toIntOrNull()
-        val type        = if (document.selectFirst("div.single_tabs a")?.text()?.contains("Episodios") == true)
-            TvType.TvSeries else TvType.Movie
-
+        val document = app.get(url).document
+        val title = document.selectFirst("div.sheader div.data h1")?.text()?.trim() ?: "Desconocido"
+        val poster = document.selectFirst("div.sheader div.poster img")?.attr("src")
+            ?.let { cacheImg(fixUrl(it)) }
+        val description = document.selectFirst("div.wp-content, p.texto")?.text()?.trim()
+        
+        // Extraer año del primer span en div.extra
+        val year = document.selectFirst("div.extra span")?.text()?.trim()?.toIntOrNull()
+        
+        // Detectar tipo: si tiene temporadas, es serie
+        val seasonDivs = document.select("div[id^='season-']")
+        val type = if (seasonDivs.isNotEmpty()) TvType.TvSeries else TvType.Movie
+        
         return when (type) {
             TvType.TvSeries -> {
-                // Extraer episodios de ul.episodios li
-                val episodes = document.select("ul.episodios li").mapNotNull { li ->
-                    val epLink = li.selectFirst("a")?.attr("href") ?: return@mapNotNull null
-                    val epPoster = li.selectFirst("img")?.attr("src")?.let { cacheImg(fixUrl(it)) }
-                    val epName = li.selectFirst("a")?.text()?.trim()
-                    val numerando = li.selectFirst("div.numerando")?.text()?.trim() // "1 - 3"
+                val episodes = seasonDivs.flatMap { seasonDiv ->
+                    val seasonId = seasonDiv.attr("id")
+                    val seasonNum = seasonId.replace("season-", "").toIntOrNull()
                     
-                    // Extraer temporada y episodio del numerando
-                    val (season, episode) = numerando?.split("-")?.map { it.trim().toIntOrNull() }
-                        ?.let { it.getOrNull(0) to it.getOrNull(1) } ?: (null to null)
-                    
-                    newEpisode(epLink) {
-                        this.name = epName
-                        this.season = season
-                        this.episode = episode
-                        this.posterUrl = epPoster
+                    seasonDiv.select("ul li").mapNotNull { li ->
+                        val mainLink = li.selectFirst("a[data-num]") ?: return@mapNotNull null
+                        val epNum = mainLink.attr("data-num") // "1x1", "2x5"
+                        val epTitle = mainLink.attr("data-title")
+                        
+                        // Extraer temporada y episodio de "1x1"
+                        val (season, episode) = Regex("""(\d+)x(\d+)""").find(epNum)?.let {
+                            it.groupValues[1].toIntOrNull() to it.groupValues[2].toIntOrNull()
+                        } ?: (seasonNum to null)
+                        
+                        // Recolectar todos los mirrors (enlaces alternativos)
+                        val mirrors = li.select("div.mirrors a[data-link]").mapNotNull { mirror ->
+                            mirror.attr("data-link").takeIf { it.isNotBlank() }
+                        }
+                        
+                        // Usar el primer mirror como data (o el data-link del main)
+                        val dataUrl = mirrors.firstOrNull() ?: mainLink.attr("data-link")
+                        
+                        newEpisode(dataUrl) {
+                            this.name = epTitle
+                            this.season = season
+                            this.episode = episode
+                        }
                     }
                 }
                 
                 newTvSeriesLoadResponse(title, url, TvType.TvSeries, episodes) {
                     this.posterUrl = poster
-                    this.backgroundPosterUrl = backimage
                     this.plot = description
                     this.year = year
                 }
@@ -109,14 +122,14 @@ class RepelisHd : MainAPI() {
             TvType.Movie -> {
                 newMovieLoadResponse(title, url, TvType.Movie, url) {
                     this.posterUrl = poster
-                    this.backgroundPosterUrl = backimage
                     this.plot = description
                     this.year = year
                 }
             }
-            else -> throw ErrorLoadingException("Unknown TvType")
+            else -> throw ErrorLoadingException("Tipo desconocido")
         }
     }
+
 
 
     override suspend fun loadLinks(
