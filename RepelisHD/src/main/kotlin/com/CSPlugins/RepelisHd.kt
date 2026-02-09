@@ -76,7 +76,7 @@ class RepelisHd : MainAPI() {
         val title = document.selectFirst("div.sheader div.data h1")?.text()?.trim() ?: "Desconocido"
         val poster = document.selectFirst("div.sheader div.poster img")?.attr("src")
             ?.let { cacheImg(fixUrl(it)) }
-        val description = document.selectFirst("div.wp-content, p.texto")?.text()?.trim()
+        val description = document.selectFirst("span > p")?.text()?.trim()
         val year = document.selectFirst("div.extra span")?.text()?.trim()?.toIntOrNull()
         
         // Detectar tipo: si tiene temporadas, es serie
