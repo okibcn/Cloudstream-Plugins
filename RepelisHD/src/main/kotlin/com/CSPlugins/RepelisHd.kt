@@ -33,7 +33,7 @@ class RepelisHd : MainAPI() {
             t.uppercase().contains("TV")  -> TvType.TvSeries
             else                          -> TvType.Movie
         }
-        fun cacheImg(t: String): String = "https://wsrv.nl/?url=${t}"
+        fun cacheImg(t: String?): String = "https://wsrv.nl/?url=${t}"
     }
 
     override suspend fun getMainPage(page: Int, request: MainPageRequest): HomePageResponse {
