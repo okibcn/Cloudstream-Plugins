@@ -122,8 +122,8 @@ class EstrenosCinesaa : MainAPI() {
         subtitleCallback: (SubtitleFile) -> Unit,
         callback: (ExtractorLink) -> Unit
     ): Boolean {
-        val document = app.get(data).documentLarge
-        links        = doc.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
+        val doc = app.get(data).documentLarge
+        links   = doc.select("div#dooplay_player_content div.source-box:not(#source-player-trailer) iframe")
             .mapNotNull { it.attr("src") }
         // Procesar todas las URLs en paralelo
         links.amap { oneLink ->
