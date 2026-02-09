@@ -154,9 +154,9 @@ override suspend fun loadLinks(
     subtitleCallback: (SubtitleFile) -> Unit,
     callback: (ExtractorLink) -> Unit
 ): Boolean {
-    Log.d("CS3debug", "loadLinks() - Data recibida: ${data.take(150)}")
+    Log.d("CS3debug", "loadLinks() - Data recibida: ${data}")
     
-    if (data.contains("TV|")) {
+    if (data.contains("TV |")) {
         // Series: "mainurl/TV |url1 url2 url3"
         val urls = data.substringAfter("TV |").split(" ").filter { it.isNotBlank() }
         Log.d("CS3debug", "loadLinks() - Serie detectada, ${urls.size} URLs a procesar")
