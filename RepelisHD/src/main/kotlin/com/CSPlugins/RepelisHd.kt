@@ -54,7 +54,7 @@ class RepelisHd : MainAPI() {
     }
 
     private fun Element.toSearchResult(): SearchResponse? {
-        val title = this.selectFirst("div.data h3 a")?.text() ?: return null
+        val title = this.selectFirst("div.data h3 a")?.text() ?: "Desconocido"
         val href = this.selectFirst("a")?.attr("href") ?: return null
         val posterUrl = cacheImg(fixUrlNull(this.selectFirst("div.poster img")?.attr("src")))
         val year = this.selectFirst("div.data span")?.text()?.toIntOrNull()

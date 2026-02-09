@@ -112,14 +112,11 @@ override suspend fun load(url: String): LoadResponse? {
     val episodes = doc.select("div.postbody div.eplister a").mapNotNull {
         val name = it.selectFirst("div.epl-title")?.text() ?: return@mapNotNull null
         val link = it.attr("href")
-        
         // Extraer temporada y episodio del formato "2x06"
         val epNum = it.selectFirst("div.epl-num")?.text()?.trim()
-        val (season, episode) = epNum?.let { numText ->
-            Regex("""(\d+)x(\d+)""").find(numText)?.let { match ->
-                match.groupValues[1].toIntOrNull() to match.groupValues[2].toIntOrNull()
-            }
-        } ?: (null to null)
+        val parts = epNum.split("x")
+        val season = parts.getOrNull(0)?.toIntOrNull()
+        val episode = parts.getOrNull(1)?.toIntOrNull()
         
         newEpisode(link) {
             this.name = name
