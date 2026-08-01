@@ -72,7 +72,7 @@ subprojects {
     }
 
     dependencies {
-//        val apk by configurations
+        val apk by configurations
         val implementation by configurations
 
         // Stubs for all Cloudstream classes
