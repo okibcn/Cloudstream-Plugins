@@ -108,6 +108,7 @@ class LATAnimeProvider : MainAPI() {
         val document = app.get(data).documentLarge
         document.select("#play-video a").amap { element ->
             val href = base64Decode(element.attr("data-player")) //.substringAfter("=")
+            println("DEBUG LATAnime: Source: $href")
             loadExtractor(
                 href,
                 "",
