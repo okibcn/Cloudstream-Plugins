@@ -289,8 +289,8 @@ class HDFull : MainAPI() {
 
     fun getUrlByProvider(providerIdx: String, id: String): String {
         return when (providerIdx) {
-            // "1" -> "https://powvideo.org/$id"       // REMOVED AS THEY USE RECAPTCHA
-            // "2" -> "https://streamplay.to/$id"      // REMOVED AS THEY USE RECAPTCHA
+            "1" -> "https://powvideo.org/$id"       // REMOVED AS THEY USE RECAPTCHA
+            "2" -> "https://streamplay.to/$id"      // REMOVED AS THEY USE RECAPTCHA
             "6" -> "https://streamtape.com/v/$id"
             "12" -> "https://gamovideo.com/$id"
             "15" -> "https://mixdrop.bz/f/$id"
