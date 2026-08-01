@@ -221,8 +221,8 @@ class HDFull : MainAPI() {
             
             json.amap { item ->       // Use .map for sequential scan, and .amap for concurrent scan, faster.
                 val url = getUrlByProvider(item.provider, item.code)
-                
-                 if (url.isNotEmpty()) {
+                println("DEBUG HDFull: Source: $url")  // DEBUG LINE
+                if (url.isNotEmpty()) {
                     try {
                         loadExtractor(url, data, subtitleCallback) { link -> 
                             CoroutineScope(Dispatchers.IO).launch {
