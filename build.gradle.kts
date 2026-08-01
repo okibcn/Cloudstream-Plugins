@@ -72,11 +72,11 @@ subprojects {
     }
 
     dependencies {
-         val compileOnly by configurations
+        val compileOnly by configurations
         val implementation by configurations
 
         // Stubs for all Cloudstream classes
-         compileOnly("com.lagradost:cloudstream3:pre-release")
+        compileOnly("com.github.recloudstream:cloudstream:pre-release")
 
         // these dependencies can include any of those which are added by the app,
         // but you dont need to include any of them if you dont need them
