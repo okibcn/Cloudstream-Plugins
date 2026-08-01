@@ -76,7 +76,7 @@ subprojects {
         val implementation by configurations
 
         // Stubs for all Cloudstream classes from new repository
-        compileOnly("com.github.recloudstream:cloudstream:-SNAPSHOT")
+        compileOnly("com.github.recloudstream.cloudstream:library:-SNAPSHOT")
 
         // these dependencies can include any of those which are added by the app,
         // but you dont need to include any of them if you dont need them
