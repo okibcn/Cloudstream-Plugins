@@ -107,8 +107,10 @@ class LATAnimeProvider : MainAPI() {
     ): Boolean {
         val document = app.get(data).documentLarge
         document.select("#play-video a").amap { element ->
-            val href = base64Decode(element.attr("data-player")) //.substringAfter("=")
-            println("DEBUG LATAnime: Source: $href")
+            val href = base64Decode(element.attr("data-player"))
+                .replace("https://monoschinos2.com/reproductor?url=", "")
+                .replace("https://mojon.latanime.org/aqua/fn?url=", "")
+            // println("DEBUG LATAnime: Source: $href")  // DEBUG LINE
             loadExtractor(
                 href,
                 "",
