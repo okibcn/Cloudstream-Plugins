@@ -1,0 +1,41 @@
+package com.lagradost.cloudstream3.extractors
+
+import com.lagradost.cloudstream3.SubtitleFile
+import com.lagradost.cloudstream3.USER_AGENT
+import com.lagradost.cloudstream3.app
+import com.lagradost.cloudstream3.extractors.helper.JwPlayerHelper
+import com.lagradost.cloudstream3.utils.ExtractorApi
+import com.lagradost.cloudstream3.utils.ExtractorLink
+
+open class MyVidmoly : ExtractorApi() {
+    override val name = "MyVidmoly"
+    override val mainUrl = "https://vidmoly.me"
+    override val requiresReferer = true
+
+    override suspend fun getUrl(
+        url: String,
+        referer: String?,
+        subtitleCallback: (SubtitleFile) -> Unit,
+        callback: (ExtractorLink) -> Unit
+    ) {
+        val downloadUrl = "https://vidmoly.biz"
+        val headers = mapOf(
+            "user-agent" to USER_AGENT,
+            "Sec-Fetch-Dest" to "iframe"
+        )
+        
+        val vidmolyId=url.removeSuffix("/").substringAfterLast("/")
+        val iframeUrl ="${downloadUrl}/embed-${vidmolyId}.html"
+        println("HDFull iframeUrl: $iframeUrl")
+        val script = app.get(iframeUrl, headers = headers, referer = referer)
+            .document.select("script")
+            .map { it.data().replace("'", "\"") }
+            .firstOrNull { it.contains("sources:") }
+        val scriptLine = script
+            ?.lineSequence()
+            ?.find { "sources:" in it }
+        println("HDFull script: $scriptLine")
+        // Extracts and parses videoData
+        JwPlayerHelper.extractStreamLinks(script.orEmpty(), name, mainUrl, callback, subtitleCallback)
+    }
+}
