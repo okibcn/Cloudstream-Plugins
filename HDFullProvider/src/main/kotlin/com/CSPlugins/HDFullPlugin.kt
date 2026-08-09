@@ -2,7 +2,7 @@ package com.CSPlugins
 
 import com.lagradost.cloudstream3.plugins.CloudstreamPlugin
 import com.lagradost.cloudstream3.plugins.BasePlugin
-import android.content.Context
+import com.lagradost.cloudstream3.app
 
 @CloudstreamPlugin
 class HDFullPlugin: BasePlugin() {

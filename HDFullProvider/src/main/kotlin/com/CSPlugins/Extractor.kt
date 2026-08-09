@@ -14,7 +14,7 @@ class MyVidmoly : ExtractorApi() {
     override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
 
-    suspend fun getUrl(
+    override suspend fun getUrl(
         url: String,
         referer: String?,
         subtitleCallback: (SubtitleFile) -> Unit,
