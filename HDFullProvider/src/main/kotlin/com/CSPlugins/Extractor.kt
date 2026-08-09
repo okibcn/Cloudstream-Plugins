@@ -11,7 +11,7 @@ import com.lagradost.cloudstream3.utils.newExtractorLink
 
 open class MyVidmoly : ExtractorApi() {
     override val name = "MyVidmoly"
-    override val mainUrl = "https://vidmoly.*"
+    override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
 
     override suspend fun getUrl(
