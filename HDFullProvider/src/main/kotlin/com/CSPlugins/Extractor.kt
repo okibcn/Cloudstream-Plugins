@@ -1,4 +1,4 @@
-package com.lagradost.cloudstream3.extractors
+package com.CSPlugins
 
 import com.lagradost.cloudstream3.SubtitleFile
 import com.lagradost.cloudstream3.USER_AGENT
@@ -9,7 +9,7 @@ import com.lagradost.cloudstream3.utils.ExtractorLink
 import com.lagradost.cloudstream3.utils.newExtractorLink
 
 
-class MyVidmoly : ExtractorApi() {
+open class MyVidmoly : ExtractorApi() {
     override val name = "MyVidmoly"
     override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
