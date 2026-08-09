@@ -6,7 +6,7 @@ import com.lagradost.cloudstream3.app
 import com.lagradost.cloudstream3.extractors.helper.JwPlayerHelper
 import com.lagradost.cloudstream3.utils.ExtractorApi
 // import com.lagradost.cloudstream3.utils.ExtractorLink
-// import com.lagradost.cloudstream3.utils.newExtractorLink
+import com.lagradost.cloudstream3.utils.newExtractorLink
 
 
 class MyVidmoly : ExtractorApi() {
@@ -14,7 +14,7 @@ class MyVidmoly : ExtractorApi() {
     override val mainUrl = "https://vidmoly.me"
     override val requiresReferer = true
 
-    override suspend fun getUrl(
+    suspend fun getUrl(
         url: String,
         referer: String?,
         subtitleCallback: (SubtitleFile) -> Unit,
