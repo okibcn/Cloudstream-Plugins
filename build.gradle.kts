@@ -94,8 +94,8 @@ subprojects {
     }
 
     dependencies {
-        val implementation by configurations
-        val cloudstream by configurations
+        val implementation = configurations.getByName("implementation")
+        val cloudstream = configurations.getByName("cloudstream")
         cloudstream("com.lagradost:cloudstream3:pre-release")
 
         // these dependencies can include any of those which are added by the app,
