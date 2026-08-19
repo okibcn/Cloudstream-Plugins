@@ -10,11 +10,11 @@ import android.util.Log
 // import java.util.*
 
 
-class LATAnimeProvider : MainAPI() {
+class CASAnimeProvider : MainAPI() {
     override var mainUrl              = "https://latanime.org"
-    override var name                 = "LATAnime"
+    override var name                 = "CASAnime"
     override val hasMainPage          = true
-    override var lang                 = "es-mx"
+    override var lang                 = "es-es"
     override val hasDownloadSupport   = true
     override val hasQuickSearch       = true
     override val supportedTypes = setOf(
