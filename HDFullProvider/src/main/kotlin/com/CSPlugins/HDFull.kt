@@ -18,7 +18,7 @@ import java.util.*
 import java.util.Calendar
 
 class HDFull : MainAPI() {
-    override var mainUrl = "https://hdfull.love"
+    override var mainUrl = "https://hdfull.org"
     override var name = "HDFull"
     override var lang = "es"
     override val hasMainPage = true
